@@ -370,10 +370,10 @@ option java_outer_classname = "Kinetic";
 
 		// These capacities are in bytes.
 		message Capacity {
-			// 1 and 2 are reserved, do not use
-			optional uint64 remaining = 3;
-			optional uint64 total = 4;
-		}
+	    	// 1-3 are reserved
+	    	optional uint64 nominalCapacityInBytes = 4;
+	    	optional float portionFull = 5;
+	    }
 
 		message Configuration {
 

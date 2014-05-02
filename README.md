@@ -1334,6 +1334,15 @@ command {
         count: ...
         bytes: ...
       }
+      
+      // Only one capacity message will be included
+      capacity {
+        // uint64
+      	nominalCapacityInBytes: ...
+      	// float
+      	portionFull: ...
+      }
+      
       // bytes representing recent Kinetic Device log messages
       messages: "..."
     }
