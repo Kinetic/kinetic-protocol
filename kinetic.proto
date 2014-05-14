@@ -333,6 +333,7 @@ option java_outer_classname = "Kinetic";
 			CONFIGURATION = 3;
 			STATISTICS = 4;
 			MESSAGES = 5;
+			LIMITS = 6;
 		}
 
 		repeated Utilization utilization = 2;
@@ -341,6 +342,7 @@ option java_outer_classname = "Kinetic";
 		optional Configuration configuration = 5;
 		repeated Statistics statistics = 6;
 		optional bytes messages = 7;
+		optional Limits limits = 8;
 
 		message Utilization {
 
@@ -427,6 +429,13 @@ option java_outer_classname = "Kinetic";
 			// the command description. For P2P operations, this is the amount of data moved between
 			// drives
 			optional uint64 bytes = 5;
+		}
+
+		message Limits {
+			optional uint32 maxKeySize = 1;
+			optional uint32 maxValueSize = 2;
+			optional uint32 maxVersionSize = 3;
+			optional uint32 maxTagSize = 4;
 		}
 
 	}

@@ -1197,6 +1197,7 @@ The `GETLOG` operation gives the client access to log information. The request m
 * `CONFIGURATION`
 * `STATISTICS`
 * `MESSAGES`
+* `LIMITS`
 
 Below we will show the message structure used to request all types in a single `GETLOG` request.
 
