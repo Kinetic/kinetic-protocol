@@ -1249,6 +1249,7 @@ command {
       type: STATISTICS
       type: TEMPERATURES
       type: UTILIZATIONS
+      type: LIMITS
       
       // Many utilization messages may be returned
       utilization {
@@ -1337,6 +1338,12 @@ command {
       }
       // bytes representing recent Kinetic Device log messages
       messages: "..."
+      
+      // limits that the device will enforce
+      limits {
+        maxKeySize = 4096;
+        ...
+      }
     }
   }
   status {
