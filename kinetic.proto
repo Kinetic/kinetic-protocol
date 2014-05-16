@@ -439,6 +439,7 @@ option java_outer_classname = "Kinetic";
 			optional uint32 maxConnections = 5;
 			optional uint32 maxOutstandingReadRequests = 6;
 			optional uint32 maxOutstandingWriteRequests = 7;
+			optional uint32 maxMessageSize = 8;
 		}
 
 	}
