@@ -1197,6 +1197,7 @@ The `GETLOG` operation gives the client access to log information. The request m
 * `CONFIGURATION`
 * `STATISTICS`
 * `MESSAGES`
+* `LIMITS`
 
 Below we will show the message structure used to request all types in a single `GETLOG` request.
 
@@ -1248,6 +1249,7 @@ command {
       type: STATISTICS
       type: TEMPERATURES
       type: UTILIZATIONS
+      type: LIMITS
       
       // Many utilization messages may be returned
       utilization {
@@ -1345,6 +1347,18 @@ command {
       
       // bytes representing recent Kinetic Device log messages
       messages: "..."
+      
+      // limits that the device will enforce
+      limits {
+        maxKeySize = ...
+        maxValueSize = ...
+        maxVersionSize = ...
+        maxTagSize = ...
+        maxConnections = ...
+        maxOutstandingReadRequests = ...
+        maxOutstandingWriteRequests = ...
+        maxMessageSize = ...
+      }
     }
   }
   status {
