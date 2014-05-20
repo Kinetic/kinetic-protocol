@@ -896,10 +896,9 @@ hmac: "..."
 
 
 Error Cases:
-	
-* `code = INTERNAL_ERROR`:
-	* The response message is larger than the allowed size. This could be because the number of keys in the range is too great to fit in one message. In this case, `statusMessage` will be "Response too large".
-	* This code could also indicate that a malfunction ocurred on the device.
+
+* `code = INVALID_REQUEST`
+    * The `maxReturned` exceeded the limit, the `status.statusMessage` will be `Key limit exceeded.`
 
 Edge Cases:
 
@@ -1358,6 +1357,7 @@ command {
         maxOutstandingReadRequests = ...
         maxOutstandingWriteRequests = ...
         maxMessageSize = ...
+        maxKeyRangeCount = ...
       }
     }
   }
