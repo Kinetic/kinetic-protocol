@@ -522,6 +522,60 @@ There are many cases where a delete could fail with a properly functioning drive
 * `code = NOT_AUTHORIZED` The identity doesn't have permission to delete this value, in this case `status.statusMessage` will be "permission denied."
 
 
+### Flus
+The `FLUSH` operation flushes any outstanding PUTs or DELETEs on the device. For example, if the client `PUT` many keys with `synchronization=WRITEBACK` the data
+would not be guaranteed to be persisted, so power cycling could result in lost data. When a `FLUSH` command returns, all previous operations with `synchronization=WRITEBACK` on
+this connection are guaranteed to be persisted. Data on separate connections is not guaranteed to be persisted, but may as an indirect consequence of this operation.
+
+**Request Message**
+
+The following request will flush the write cache.
+
+```
+command {
+  // See top level cross cutting concerns for header details
+  header {
+    clusterVersion: ...
+    identity: ...
+    connectionID: ...
+    sequence: ...
+    // messageType should be FLUSH
+    messageType: FLUSH
+  }
+  body {
+  }
+}
+// See above
+hmac: "..."
+```
+
+**Response Message**
+When the cache is flushed, the device will return the following message:
+
+```
+
+command {
+  // See top level cross cutting concerns for header details
+  header {
+    ackSequence: ...
+
+    // messageType should be FLUSH_RESPONSE
+    messageType: FLUSH_RESPONSE
+  }
+  body {
+  }
+  status {
+  // A successful FLUSH will return SUCCESS
+    code: SUCCESS
+  }
+}
+hmac: "..."
+
+```
+
+**Permissions**
+Having unrestricted `WRITE` or `DELETE` permissions is sufficient to execute a `FLUSH` command.
+
 
 ## Read Operations
 There are a number of operations which are designed to allow clients to read values from the Kinetic Device. They will be discussed in this section.

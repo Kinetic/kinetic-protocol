@@ -541,6 +541,9 @@ message Message {
 
     NOOP = 30;
     NOOP_RESPONSE = 29;
+
+    FLUSH = 32;
+    FLUSH_RESPONSE = 31;
   }
 
 }
