@@ -905,7 +905,7 @@ Edge Cases:
 * If neither `startKey` or `endKey` are found in the store, any keys that would be sorted between them will be returned.
 * If the given keys are out of order (e.g. `startKey` is sorted after `endKey`), then no keys will be returned.
 
-** Permissions **
+**Permissions**
 
 This operation should return the first contiguous block of keys for which the requesting identity has the `RANGE` permission on an applicable scope. This means that not necessarily each key in the requested range for which the identity has this permission will be returned. For instance, consider a store that contains `k0`, `k1`, `k2`, `k4`, and `k5`, where the requesting identity has the `RANGE` permission  on scopes which aply to `k0`, `k1`, `k4`, and `k5` but notably does not have `RANGE` permission on any scope which applies to `k2`. Then if that identity requests a `GETKEYRANGE` with `startKey=k0` (inclusive), `endKey=k5` (inclusive) the Kinetic Device will return `k0` and `k1`. When it reaches `k2`, for which it does not have a `RANGE` permission, it will stop the operation.
 

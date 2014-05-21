@@ -32,515 +32,515 @@ option java_outer_classname = "Kinetic";
  * 1.5 HMAC.
  *
  */
- message Message {
-
-// The command contains the header, body and status as a single
-// unit that will be used to calculate the HMAC.
-	optional Command command = 1;
-
-    // 2 is reserved, do not use
-
-	//HMAC
-	optional bytes hmac = 3;
-	message Command {
-	//message header
-		optional Header header = 1;
-
-		//message body
-		optional Body body = 2;
-
-		//operation status
-		optional Status status = 3;
-	}
-
-	//message header
-	message Header {
-
-	// "cluster" is the version number of the cluster definition. If this is incompatible,
-	// the request is rejected. If it is missing, it is assumed to be 0. (0 allows systems not
-	// using cluster vesioning to ignore this field in the header and in the setup.)
-		optional int64 clusterVersion = 1;
-
-		// The hmac of the request provides the authentication and (indirectly) the authority of the identity.
-		// The "identity" identifies the requester and the key and algorithm to be used for hmac. (See security document).
-		optional int64 identity = 2;
-
-		// A unique number for this connection between the source and target. On the first request
-		// to the drive, this should be the time of day in seconds since 1970. The drive can change this
-		// number and the client must continue to use the new number and the number must remain
-		// constant during the session. (See security document).
-		optional int64 connectionID = 3;
-
-		// the sequence of this request in this TCP connection. As long as this value is getting larger we have
-		// strong ordering and replay prevention within a session. This combined with the time and connectionID
-		// provides strong ordering between sessions. (See security document).
-		optional int64 sequence = 4;
-
-		//co-related sequence
-		optional int64 ackSequence = 6;
-
-		//operation code - put/get/delete/GetLog, etc.
-		optional MessageType messageType = 7;
-
-        // 8 is reserved, no not use
-
-		// Request timeout (in ms). This is the amount of time that this request should take. If this timeout
-		// is triggered, there are three possible results that can be returned.
-		//     - SERVICE_BUSY meaning that the request was still on the queue waiting to be executed
-		//     - EXPIRED meaning that a long running operation was stopped because the time expired.
-		//     - DATA_ERROR meaning that the request was in process, but that the error recovery was not
-		//                  complete at the time that the time expired
-		optional int64 timeout = 9;
-
-		// If true, requests will not attempt multi revolution recoveries even if the timeout has not occurred.
-		// In this case the result will be DATA_ERROR. To have the drive exhaust all possible error recovery, leave
-		// this field off or set to false, and make sure that the timeout is set to be longer than any possible queue
-		// time and error recovery time. On a disk drive, the maximum error recovery time could be seconds.
-		// Once all possible data recovery operations are complete and have not succeeded, PERM_DATA_ERROR will be
-		// returned.
-		optional bool earlyExit = 10;
-
-		// A hint that this request is part of a background scan, this is a hint that can allow the drive
-		// to do it's background read process on this record. This allows the drive not to do it's own
-		// background scan.
-		optional bool backgroundScan = 11;
-	}
-
-	//message body
-	message Body {
-
-	//key/value op
-		optional KeyValue keyValue = 1;
-
-		//range operation
-		optional Range range = 2;
-
-		//set up operation
-		optional Setup setup = 3;
-
-		// Peer to Peer operations.
-		optional P2POperation p2pOperation = 4;
-
-		//GetLog
-		optional GetLog getLog = 6;
-
-		//set up security
-		optional Security security = 7;
-	}
-
-	//operation status
-	message Status {
-	//status code
-		optional StatusCode code = 1;
-		//status message
-		optional string statusMessage = 2;
-		//optional information comes with status
-		optional bytes detailedMessage = 3;
-
-		//enum of status code
-		enum StatusCode {
-            // Must come first, so default is invalid
-            INVALID_STATUS_CODE = -1;
-
-			//  for a P2P operation, there was a reason the list was incomplete. This is for items
-			// that were not attempted.
-			NOT_ATTEMPTED = 0;
-
-			SUCCESS = 1;
-			HMAC_FAILURE = 2;
-			NOT_AUTHORIZED = 3;
-			VERSION_FAILURE = 4;
-			INTERNAL_ERROR = 5;
-			HEADER_REQUIRED = 6;
-			NOT_FOUND = 7;
-			VERSION_MISMATCH = 8;
-
-			// If there are too many requests in the device at this time, requests
-			// will be rejected with this error message. The common response is to
-			// wait and retry the operation with an exponential back-off.
-			SERVICE_BUSY = 9;
-
-			// A long operation was started and a timeout happened mid operation. This
-			// does not imply a failure.
-			EXPIRED = 10;
-
-			// A data error happened and either earlyExit was set or the timeout happened.
-			DATA_ERROR = 11;
-
-			// A data error happened and all possible error recovery operations have been
-			// performed. There is no value to trying this again. If the system has the ability
-			// to determine the correct information, writing the data again can get rid
-			PERM_DATA_ERROR = 12;
-
-			// A TCP connection to the remote peer failed. This is only for the P2P Operation
-			REMOTE_CONNECTION_ERROR = 13;
-
-			// When the drive is full, it returns this error. The background scrubbing may free space,
-			// so this error may go away
-			NO_SPACE = 14;
-
-			// In the set security, an HmacAlgorithm was specified as Unknown or there is a protocol
-			// version mis-match
-			NO_SUCH_HMAC_ALGORITHM = 15;
-
-            // The request is not valid. Subsequent attempts with the same request will return the same code.
-            // Examples: GET does not specify keyValue message, GETKEYRANGE operation does not specify startKey, etc
-            INVALID_REQUEST = 16;
-		}
-
-	}
-
-	//key/value entry operation
-	message KeyValue {
-
-	// On a put or delete, this is the next version that the data will be. The version field is opaque to the
-	// target. (See Atomic operations document)
-		optional bytes newVersion = 2;
-
-		// On a put or delete, this forces the write to ignore the existing version of existing data (if it exists).
-		optional bool force = 8;
-
-		//entry key
-		optional bytes key = 3;
-
-		//entry version in store
-		optional bytes dbVersion = 4;
-
-		// this is the integrity value of the data. This may or may not be in the clear, depending on the algorithm
-		// used.
-		optional bytes tag = 5;
-
-		// The following is for the protection of the data. If the data is protected with a hash or CRC, then
-		// the algorithm will be negative. If the data protection algorithm is not a standard unkeyed algorithm
-		// then  a positive number is used and the drive has no idea what the key is. See the discussion of
-		// encrypted key/value store.(See security document).
-		optional Algorithm algorithm = 6;
-
-		// for read operations, this will get all the information about the value except for the
-		// value itself. This is valuable for getting the integrity field or the version without also
-		// having to get the data. If this field is not present, it is as if it is false. For
-		// write or delete operations, if this is set, the command is rejected.
-		optional bool metadataOnly = 7;
-
-
-		// Synchronization allows the puts and deletes to determine if they are to be
-		// WRITETHROUGH: This request is made persistent before returning. This does not effect any other pending operations.
-		// WRITEBACK: They can be made persistent when the drive chooses, or when a subsequent FLUSH is give to the drive.
-		// FLUSH: All pending information that has not been written is pushed to the disk and the command that
-		//        specifies FLUSH is written last and then returned. All WRITEBACK writes that have received ending
-		//        status will be guaranteed to be written before the FLUSH operation is returned completed.
-		optional Synchronization synchronization = 9;
-	}
-
-	enum Synchronization {
-        INVALID_SYNCHRONIZATION = -1; // Must come first, so default is invalid
-		WRITETHROUGH = 1;
-		WRITEBACK = 2;
-		FLUSH = 3;
-	}
-
-	//key range op
-	message Range {
-		optional bytes startKey = 1;
-		optional bytes endKey = 2;
-		optional bool startKeyInclusive = 3;
-		optional bool endKeyInclusive = 4;
-
-		// The maximum number of keys returned
-		optional int32 maxReturned = 5;
-
-		// The keys are searched for and returned in a reverse order. For instance
-		// if the search is startKey="j", endKey="k", maxReturned=2,
-		// reverse=true and the keys "k0", "k1", "k2" exist
-		// the system will return "k2" and "k1" in that order.
-		optional bool reverse = 6;
-
-		//get range response .
-		repeated bytes key = 8;
-	}
-
-	//set up operation.
-	message Setup {
-
-	// The cluster version to be checked. The default if never set is 0.
-	// If this is missing, it is assumed to be unchanged;
-	// This is persistent between boots of the drive.
-		optional int64 newClusterVersion = 1;
-
-		// setting this empties the entire database. If supported will also change
-		// keys such that the data is destroyed even if the platters are removed and
-		// put into a spin stand, the data is not recoverable.
-		optional bool instantSecureErase = 2;
-
-		// if set with instantSecureErase, this sets the Pin. If with pin, this changes the pin.
-		optional bytes setPin = 3;
-
-		// If the pin is set, then the pin needs to be set whenever the drive is
-		// booted or powered up. Any drive getting a command, and the pin has not
-		// been set, will be rejected.
-		optional bytes pin = 4;
-
-		// indicates the presence of a firmware load in the data portion of this
-		// message. The firmware is itself protected on its own for integrity,
-		// authenticity, etc.
-		optional bool firmwareDownload = 5;
-	}
-
-
-	// P2P operations allow drives to be able to send keys to other drives.
-	// this is either a standalone command or added to a put command.
-	message P2POperation {
-
-		// Describe the target machine
-		optional Peer peer = 1;
-		// List of operations to be performed.
-		repeated Operation operation = 2;
-
-		message Operation {
-			// the key of the entry to move
-			optional bytes key = 3;
-			// the expected version number in the other machine
-			// the version number will be the version in the stored entry.
-			optional bytes version = 4;
-			// to have the moved key have a different final key used.
-			optional bytes newKey = 5;
-			// force the write ignoring the current key version.
-			optional bool force = 6;
-			// returned status
-			optional Status status = 7;
-
-			// an operation to add to this put operation. THis allows the
-			// formation of a pipeline client -> A ->B ->C with the status for all returning
-			// back to the client.
-			optional P2POperation p2pop = 8;
-		}
-
-		message Peer {
-			optional string hostname = 1;
-			optional int32 port = 2;
-			optional bool tls = 3;
-		}
-	}
-
-	//get log
-	message GetLog {
-		repeated Type type = 1;
-		enum Type {
-            INVALID_TYPE = -1; // Must come first, so default is invalid
-			UTILIZATIONS = 0;
-			TEMPERATURES = 1;
-			CAPACITIES = 2;
-			CONFIGURATION = 3;
-			STATISTICS = 4;
-			MESSAGES = 5;
-			LIMITS = 6;
-		}
-
-		repeated Utilization utilization = 2;
-		repeated Temperature temperature = 3;
-		optional Capacity capacity = 4;
-		optional Configuration configuration = 5;
-		repeated Statistics statistics = 6;
-		optional bytes messages = 7;
-		optional Limits limits = 8;
-
-		message Utilization {
-
-		// The name of the utilization being reported. These names can be standard and proprietary. The
-		// standard names are "HDA", "EN0" and "EN1". If there are more items that are
-		// being reported, such as processor utilization, can have a descriptive name.
-			optional string name = 1;
-
-			// A number between 0.00 and 1.00. The resolution of this number is up to the
-			// drive. 1 means 100% utilized.
-			optional float value = 2;
-		}
-
-		message Temperature {
-
-		// The name of the temperature being reported. These names can be standard and proprietary. The
-		// standard name is "HDA". If there are more items that are
-		// being reported, such as processor temperature, can have a descriptive name.
-			optional string name = 1;
-
-			// The current temperature in degrees c
-			optional float current = 2;
-			optional float minimum = 3;
-			optional float maximum = 4;
-			optional float target = 5;
-		}
-
-		// These capacities are in bytes.
-		message Capacity {
-            // 1-3 are reserved
-            optional uint64 nominalCapacityInBytes = 4;
-	        optional float portionFull = 5;
-        }
-
-		message Configuration {
-
-			// name of the vendor. Should be "Seagate"
-			optional string vendor = 5;
-
-			// The model of the device.
-			// "Simulator" for the simulator.
-			optional string model = 6;
-
-			// Device Serial number (SN)
-			optional bytes serialNumber = 7;
-
-			// Device world wide name (WWN)
-			optional bytes worldWideName = 14;
-
-			// This is the vendor specific version of the software on the drive in dot notation
-			// if this is not set or ends with "x" this is test code.
-			optional string version = 8;
-			optional string compilationDate = 12;
-			optional string sourceHash = 13;
-
-			// This is the version of the protocol (.proto file) that the drive uses.
-			// This is not the highest or lowest version that is supported, just
-			// the version that was compiled.
-			optional string protocolVersion = 15;
-			optional string protocolCompilationDate = 16;
-			optional string protocolSourceHash = 17;
-
-			// the interfaces for this device. one per interface.
-			repeated Interface interface = 9;
-
-			// these are the port numbers for the software
-			optional int32 port = 10;
-			optional int32 tlsPort = 11;
-
-			message Interface {
-				optional string name = 1;
-				optional bytes MAC = 2;
-				optional bytes ipv4Address = 3;
-				optional bytes ipv6Address = 4;
-			}
-		}
-
-		// These numbers start at 0 when the drive starts up and never wraps or resets.
-		message Statistics {
-			optional MessageType messageType = 1;
-			// 2 and 3 are reserved, do not use
-			optional uint64 count = 4;
-			// This is the sum of the data that is in the data portion. This does not include t
-			// the command description. For P2P operations, this is the amount of data moved between
-			// drives
-			optional uint64 bytes = 5;
-		}
-
-		message Limits {
-			optional uint32 maxKeySize = 1;
-			optional uint32 maxValueSize = 2;
-			optional uint32 maxVersionSize = 3;
-			optional uint32 maxTagSize = 4;
-			optional uint32 maxConnections = 5;
-			optional uint32 maxOutstandingReadRequests = 6;
-			optional uint32 maxOutstandingWriteRequests = 7;
-			optional uint32 maxMessageSize = 8;
-			optional uint32 maxKeyRangeCount = 9;
-		}
-
-	}
-
-	message Security {
-		repeated ACL acl = 2; // one per identity
-		message ACL {
-			optional int64 identity = 1;
-			optional bytes key = 2; // the HMAC key
-            optional HMACAlgorithm hmacAlgorithm = 3;
-
-			// value that must be in the key for read, write, range requests. If none are specified
-			// then no checking occurs. If one or more is specified, one must match or the request
-			// is rejected
-			repeated Scope scope = 4;
-
-			enum HMACAlgorithm {
-                INVALID_HMAC_ALGORITHM = -1; // Must come first, so default is invalid
-                // 0 is reserved; do not use
-                HmacSHA1 = 1; // this is the default
-            }
-
-			message Scope {
-				optional int64 offset = 1;
-				optional bytes value = 2;
-				repeated Permission permission = 3; // one per role
-				optional bool TlsRequired = 4; // This is only allowed over the the TLS connection
-			}
-
-			enum Permission {
-				INVALID_PERMISSION = -1; // place holder for backward .proto file compatibility
-				READ = 0; // can read key/values
-				WRITE = 1; // can write key/values
-				DELETE = 2;
-				RANGE = 3; // can do a range
-				SETUP = 4; // can set up and a device
-				P2POP = 5; // can do a peer to peer operation
-				GETLOG = 7; // can get log
-				SECURITY = 8; // can set up the security roles of the device
-			}
-
-		}
-
-	}
-
-	//algorithm
-	enum Algorithm {
-        INVALID_ALGORITHM = -1; // Must come first, so default is invalid
-        SHA1 = 1; // see NIST
-		SHA2 = 2; // see NIST
-		SHA3 = 3; // see NIST. The length of the tag determined the length of the hash
-		CRC32 = 4; // the CRC32 is the standard Ethernet CRC32. See IEEE
-		CRC64 = 5; // The CRC is ...
-		// 7-99 are reserved.
-		// 100-inf are private algorithms.
-	}
-
-	//operation code
-	enum MessageType {
-        INVALID_MESSAGE_TYPE = -1; // Must come first, so default is invalid
-
-        GET = 2; //get operation
-		GET_RESPONSE = 1;
-
-		PUT = 4; //put operation
-		PUT_RESPONSE = 3;
-
-		DELETE = 6;
-		DELETE_RESPONSE = 5;
-
-		GETNEXT = 8;
-		GETNEXT_RESPONSE = 7;
-
-		GETPREVIOUS = 10;
-		GETPREVIOUS_RESPONSE = 9;
-
-		GETKEYRANGE = 12;
-		GETKEYRANGE_RESPONSE = 11;
-
-        // 13 and 14 are reserved, do not use
-
-		GETVERSION = 16;
-		GETVERSION_RESPONSE = 15;
-
-        // 17, 18, 19, and 20 are reserved, do not use
-
-		SETUP = 22;
-		SETUP_RESPONSE = 21;
-
-		GETLOG = 24;
-		GETLOG_RESPONSE = 23;
-
-		SECURITY = 26;
-		SECURITY_RESPONSE = 25;
-
-		PEER2PEERPUSH = 28; //peer to peer push operation
-		PEER2PEERPUSH_RESPONSE = 27;
-
-		NOOP = 30;
-		NOOP_RESPONSE = 29;
-	}
+message Message {
+
+  // The command contains the header, body and status as a single
+  // unit that will be used to calculate the HMAC.
+  optional Command command = 1;
+
+  // 2 is reserved, do not use
+
+  //HMAC
+  optional bytes hmac = 3;
+  message Command {
+    //message header
+    optional Header header = 1;
+
+    //message body
+    optional Body body = 2;
+
+    //operation status
+    optional Status status = 3;
+  }
+
+  //message header
+  message Header {
+
+    // "cluster" is the version number of the cluster definition. If this is incompatible,
+    // the request is rejected. If it is missing, it is assumed to be 0. (0 allows systems not
+    // using cluster vesioning to ignore this field in the header and in the setup.)
+    optional int64 clusterVersion = 1;
+
+    // The hmac of the request provides the authentication and (indirectly) the authority of the identity.
+    // The "identity" identifies the requester and the key and algorithm to be used for hmac. (See security document).
+    optional int64 identity = 2;
+
+    // A unique number for this connection between the source and target. On the first request
+    // to the drive, this should be the time of day in seconds since 1970. The drive can change this
+    // number and the client must continue to use the new number and the number must remain
+    // constant during the session. (See security document).
+    optional int64 connectionID = 3;
+
+    // the sequence of this request in this TCP connection. As long as this value is getting larger we have
+    // strong ordering and replay prevention within a session. This combined with the time and connectionID
+    // provides strong ordering between sessions. (See security document).
+    optional int64 sequence = 4;
+
+    //co-related sequence
+    optional int64 ackSequence = 6;
+
+    //operation code - put/get/delete/GetLog, etc.
+    optional MessageType messageType = 7;
+
+    // 8 is reserved, no not use
+
+    // Request timeout (in ms). This is the amount of time that this request should take. If this timeout
+    // is triggered, there are three possible results that can be returned.
+    //   - SERVICE_BUSY meaning that the request was still on the queue waiting to be executed
+    //   - EXPIRED meaning that a long running operation was stopped because the time expired.
+    //   - DATA_ERROR meaning that the request was in process, but that the error recovery was not
+    //          complete at the time that the time expired
+    optional int64 timeout = 9;
+
+    // If true, requests will not attempt multi revolution recoveries even if the timeout has not occurred.
+    // In this case the result will be DATA_ERROR. To have the drive exhaust all possible error recovery, leave
+    // this field off or set to false, and make sure that the timeout is set to be longer than any possible queue
+    // time and error recovery time. On a disk drive, the maximum error recovery time could be seconds.
+    // Once all possible data recovery operations are complete and have not succeeded, PERM_DATA_ERROR will be
+    // returned.
+    optional bool earlyExit = 10;
+
+    // A hint that this request is part of a background scan, this is a hint that can allow the drive
+    // to do it's background read process on this record. This allows the drive not to do it's own
+    // background scan.
+    optional bool backgroundScan = 11;
+  }
+
+  //message body
+  message Body {
+
+    //key/value op
+    optional KeyValue keyValue = 1;
+
+    //range operation
+    optional Range range = 2;
+
+    //set up operation
+    optional Setup setup = 3;
+
+    // Peer to Peer operations.
+    optional P2POperation p2pOperation = 4;
+
+    //GetLog
+    optional GetLog getLog = 6;
+
+    //set up security
+    optional Security security = 7;
+  }
+
+  //operation status
+  message Status {
+    //status code
+    optional StatusCode code = 1;
+    //status message
+    optional string statusMessage = 2;
+    //optional information comes with status
+    optional bytes detailedMessage = 3;
+
+    //enum of status code
+    enum StatusCode {
+      // Must come first, so default is invalid
+      INVALID_STATUS_CODE = -1;
+
+      //  for a P2P operation, there was a reason the list was incomplete. This is for items
+      // that were not attempted.
+      NOT_ATTEMPTED = 0;
+
+      SUCCESS = 1;
+      HMAC_FAILURE = 2;
+      NOT_AUTHORIZED = 3;
+      VERSION_FAILURE = 4;
+      INTERNAL_ERROR = 5;
+      HEADER_REQUIRED = 6;
+      NOT_FOUND = 7;
+      VERSION_MISMATCH = 8;
+
+      // If there are too many requests in the device at this time, requests
+      // will be rejected with this error message. The common response is to
+      // wait and retry the operation with an exponential back-off.
+      SERVICE_BUSY = 9;
+
+      // A long operation was started and a timeout happened mid operation. This
+      // does not imply a failure.
+      EXPIRED = 10;
+
+      // A data error happened and either earlyExit was set or the timeout happened.
+      DATA_ERROR = 11;
+
+      // A data error happened and all possible error recovery operations have been
+      // performed. There is no value to trying this again. If the system has the ability
+      // to determine the correct information, writing the data again can get rid
+      PERM_DATA_ERROR = 12;
+
+      // A TCP connection to the remote peer failed. This is only for the P2P Operation
+      REMOTE_CONNECTION_ERROR = 13;
+
+      // When the drive is full, it returns this error. The background scrubbing may free space,
+      // so this error may go away
+      NO_SPACE = 14;
+
+      // In the set security, an HmacAlgorithm was specified as Unknown or there is a protocol
+      // version mis-match
+      NO_SUCH_HMAC_ALGORITHM = 15;
+
+      // The request is not valid. Subsequent attempts with the same request will return the same code.
+      // Examples: GET does not specify keyValue message, GETKEYRANGE operation does not specify startKey, etc
+      INVALID_REQUEST = 16;
+    }
+
+  }
+
+  //key/value entry operation
+  message KeyValue {
+
+    // On a put or delete, this is the next version that the data will be. The version field is opaque to the
+    // target. (See Atomic operations document)
+    optional bytes newVersion = 2;
+
+    // On a put or delete, this forces the write to ignore the existing version of existing data (if it exists).
+    optional bool force = 8;
+
+    //entry key
+    optional bytes key = 3;
+
+    //entry version in store
+    optional bytes dbVersion = 4;
+
+    // this is the integrity value of the data. This may or may not be in the clear, depending on the algorithm
+    // used.
+    optional bytes tag = 5;
+
+    // The following is for the protection of the data. If the data is protected with a hash or CRC, then
+    // the algorithm will be negative. If the data protection algorithm is not a standard unkeyed algorithm
+    // then  a positive number is used and the drive has no idea what the key is. See the discussion of
+    // encrypted key/value store.(See security document).
+    optional Algorithm algorithm = 6;
+
+    // for read operations, this will get all the information about the value except for the
+    // value itself. This is valuable for getting the integrity field or the version without also
+    // having to get the data. If this field is not present, it is as if it is false. For
+    // write or delete operations, if this is set, the command is rejected.
+    optional bool metadataOnly = 7;
+
+
+    // Synchronization allows the puts and deletes to determine if they are to be
+    // WRITETHROUGH: This request is made persistent before returning. This does not effect any other pending operations.
+    // WRITEBACK: They can be made persistent when the drive chooses, or when a subsequent FLUSH is give to the drive.
+    // FLUSH: All pending information that has not been written is pushed to the disk and the command that
+    //    specifies FLUSH is written last and then returned. All WRITEBACK writes that have received ending
+    //    status will be guaranteed to be written before the FLUSH operation is returned completed.
+    optional Synchronization synchronization = 9;
+  }
+
+  enum Synchronization {
+    INVALID_SYNCHRONIZATION = -1; // Must come first, so default is invalid
+    WRITETHROUGH = 1;
+    WRITEBACK = 2;
+    FLUSH = 3;
+  }
+
+  //key range op
+  message Range {
+    optional bytes startKey = 1;
+    optional bytes endKey = 2;
+    optional bool startKeyInclusive = 3;
+    optional bool endKeyInclusive = 4;
+
+    // The maximum number of keys returned
+    optional int32 maxReturned = 5;
+
+    // The keys are searched for and returned in a reverse order. For instance
+    // if the search is startKey="j", endKey="k", maxReturned=2,
+    // reverse=true and the keys "k0", "k1", "k2" exist
+    // the system will return "k2" and "k1" in that order.
+    optional bool reverse = 6;
+
+    //get range response .
+    repeated bytes key = 8;
+  }
+
+  //set up operation.
+  message Setup {
+
+    // The cluster version to be checked. The default if never set is 0.
+    // If this is missing, it is assumed to be unchanged;
+    // This is persistent between boots of the drive.
+    optional int64 newClusterVersion = 1;
+
+    // setting this empties the entire database. If supported will also change
+    // keys such that the data is destroyed even if the platters are removed and
+    // put into a spin stand, the data is not recoverable.
+    optional bool instantSecureErase = 2;
+
+    // if set with instantSecureErase, this sets the Pin. If with pin, this changes the pin.
+    optional bytes setPin = 3;
+
+    // If the pin is set, then the pin needs to be set whenever the drive is
+    // booted or powered up. Any drive getting a command, and the pin has not
+    // been set, will be rejected.
+    optional bytes pin = 4;
+
+    // indicates the presence of a firmware load in the data portion of this
+    // message. The firmware is itself protected on its own for integrity,
+    // authenticity, etc.
+    optional bool firmwareDownload = 5;
+  }
+
+
+  // P2P operations allow drives to be able to send keys to other drives.
+  // this is either a standalone command or added to a put command.
+  message P2POperation {
+
+    // Describe the target machine
+    optional Peer peer = 1;
+    // List of operations to be performed.
+    repeated Operation operation = 2;
+
+    message Operation {
+      // the key of the entry to move
+      optional bytes key = 3;
+      // the expected version number in the other machine
+      // the version number will be the version in the stored entry.
+      optional bytes version = 4;
+      // to have the moved key have a different final key used.
+      optional bytes newKey = 5;
+      // force the write ignoring the current key version.
+      optional bool force = 6;
+      // returned status
+      optional Status status = 7;
+
+      // an operation to add to this put operation. THis allows the
+      // formation of a pipeline client -> A ->B ->C with the status for all returning
+      // back to the client.
+      optional P2POperation p2pop = 8;
+    }
+
+    message Peer {
+      optional string hostname = 1;
+      optional int32 port = 2;
+      optional bool tls = 3;
+    }
+  }
+
+  //get log
+  message GetLog {
+    repeated Type type = 1;
+    enum Type {
+      INVALID_TYPE = -1; // Must come first, so default is invalid
+      UTILIZATIONS = 0;
+      TEMPERATURES = 1;
+      CAPACITIES = 2;
+      CONFIGURATION = 3;
+      STATISTICS = 4;
+      MESSAGES = 5;
+      LIMITS = 6;
+    }
+
+    repeated Utilization utilization = 2;
+    repeated Temperature temperature = 3;
+    optional Capacity capacity = 4;
+    optional Configuration configuration = 5;
+    repeated Statistics statistics = 6;
+    optional bytes messages = 7;
+    optional Limits limits = 8;
+
+    message Utilization {
+
+      // The name of the utilization being reported. These names can be standard and proprietary. The
+      // standard names are "HDA", "EN0" and "EN1". If there are more items that are
+      // being reported, such as processor utilization, can have a descriptive name.
+      optional string name = 1;
+
+      // A number between 0.00 and 1.00. The resolution of this number is up to the
+      // drive. 1 means 100% utilized.
+      optional float value = 2;
+    }
+
+    message Temperature {
+
+      // The name of the temperature being reported. These names can be standard and proprietary. The
+      // standard name is "HDA". If there are more items that are
+      // being reported, such as processor temperature, can have a descriptive name.
+      optional string name = 1;
+
+      // The current temperature in degrees c
+      optional float current = 2;
+      optional float minimum = 3;
+      optional float maximum = 4;
+      optional float target = 5;
+    }
+
+    // These capacities are in bytes.
+    message Capacity {
+      // 1-3 are reserved
+      optional uint64 nominalCapacityInBytes = 4;
+      optional float portionFull = 5;
+    }
+
+    message Configuration {
+
+      // name of the vendor. Should be "Seagate"
+      optional string vendor = 5;
+
+      // The model of the device.
+      // "Simulator" for the simulator.
+      optional string model = 6;
+
+      // Device Serial number (SN)
+      optional bytes serialNumber = 7;
+
+      // Device world wide name (WWN)
+      optional bytes worldWideName = 14;
+
+      // This is the vendor specific version of the software on the drive in dot notation
+      // if this is not set or ends with "x" this is test code.
+      optional string version = 8;
+      optional string compilationDate = 12;
+      optional string sourceHash = 13;
+
+      // This is the version of the protocol (.proto file) that the drive uses.
+      // This is not the highest or lowest version that is supported, just
+      // the version that was compiled.
+      optional string protocolVersion = 15;
+      optional string protocolCompilationDate = 16;
+      optional string protocolSourceHash = 17;
+
+      // the interfaces for this device. one per interface.
+      repeated Interface interface = 9;
+
+      // these are the port numbers for the software
+      optional int32 port = 10;
+      optional int32 tlsPort = 11;
+
+      message Interface {
+        optional string name = 1;
+        optional bytes MAC = 2;
+        optional bytes ipv4Address = 3;
+        optional bytes ipv6Address = 4;
+      }
+    }
+
+    // These numbers start at 0 when the drive starts up and never wraps or resets.
+    message Statistics {
+      optional MessageType messageType = 1;
+      // 2 and 3 are reserved, do not use
+      optional uint64 count = 4;
+      // This is the sum of the data that is in the data portion. This does not include t
+      // the command description. For P2P operations, this is the amount of data moved between
+      // drives
+      optional uint64 bytes = 5;
+    }
+
+    message Limits {
+      optional uint32 maxKeySize = 1;
+      optional uint32 maxValueSize = 2;
+      optional uint32 maxVersionSize = 3;
+      optional uint32 maxTagSize = 4;
+      optional uint32 maxConnections = 5;
+      optional uint32 maxOutstandingReadRequests = 6;
+      optional uint32 maxOutstandingWriteRequests = 7;
+      optional uint32 maxMessageSize = 8;
+      optional uint32 maxKeyRangeCount = 9;
+    }
+
+  }
+
+  message Security {
+    repeated ACL acl = 2; // one per identity
+    message ACL {
+      optional int64 identity = 1;
+      optional bytes key = 2; // the HMAC key
+      optional HMACAlgorithm hmacAlgorithm = 3;
+
+      // value that must be in the key for read, write, range requests. If none are specified
+      // then no checking occurs. If one or more is specified, one must match or the request
+      // is rejected
+      repeated Scope scope = 4;
+
+      enum HMACAlgorithm {
+        INVALID_HMAC_ALGORITHM = -1; // Must come first, so default is invalid
+        // 0 is reserved; do not use
+        HmacSHA1 = 1; // this is the default
+      }
+
+      message Scope {
+        optional int64 offset = 1;
+        optional bytes value = 2;
+        repeated Permission permission = 3; // one per role
+        optional bool TlsRequired = 4; // This is only allowed over the the TLS connection
+      }
+
+      enum Permission {
+        INVALID_PERMISSION = -1; // place holder for backward .proto file compatibility
+        READ = 0; // can read key/values
+        WRITE = 1; // can write key/values
+        DELETE = 2;
+        RANGE = 3; // can do a range
+        SETUP = 4; // can set up and a device
+        P2POP = 5; // can do a peer to peer operation
+        GETLOG = 7; // can get log
+        SECURITY = 8; // can set up the security roles of the device
+      }
+
+    }
+
+  }
+
+  //algorithm
+  enum Algorithm {
+    INVALID_ALGORITHM = -1; // Must come first, so default is invalid
+    SHA1 = 1; // see NIST
+    SHA2 = 2; // see NIST
+    SHA3 = 3; // see NIST. The length of the tag determined the length of the hash
+    CRC32 = 4; // the CRC32 is the standard Ethernet CRC32. See IEEE
+    CRC64 = 5; // The CRC is ...
+    // 7-99 are reserved.
+    // 100-inf are private algorithms.
+  }
+
+  //operation code
+  enum MessageType {
+    INVALID_MESSAGE_TYPE = -1; // Must come first, so default is invalid
+
+    GET = 2; //get operation
+    GET_RESPONSE = 1;
+
+    PUT = 4; //put operation
+    PUT_RESPONSE = 3;
+
+    DELETE = 6;
+    DELETE_RESPONSE = 5;
+
+    GETNEXT = 8;
+    GETNEXT_RESPONSE = 7;
+
+    GETPREVIOUS = 10;
+    GETPREVIOUS_RESPONSE = 9;
+
+    GETKEYRANGE = 12;
+    GETKEYRANGE_RESPONSE = 11;
+
+    // 13 and 14 are reserved, do not use
+
+    GETVERSION = 16;
+    GETVERSION_RESPONSE = 15;
+
+    // 17, 18, 19, and 20 are reserved, do not use
+
+    SETUP = 22;
+    SETUP_RESPONSE = 21;
+
+    GETLOG = 24;
+    GETLOG_RESPONSE = 23;
+
+    SECURITY = 26;
+    SECURITY_RESPONSE = 25;
+
+    PEER2PEERPUSH = 28; //peer to peer push operation
+    PEER2PEERPUSH_RESPONSE = 27;
+
+    NOOP = 30;
+    NOOP_RESPONSE = 29;
+  }
 
 }
