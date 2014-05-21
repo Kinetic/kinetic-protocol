@@ -574,7 +574,7 @@ hmac: "..."
 ```
 
 **Permissions**
-Having unrestricted `WRITE` or `DELETE` permissions is sufficient to execute a `FLUSHALLDATA` command.
+No special permissions are required.
 
 
 ## Read Operations
