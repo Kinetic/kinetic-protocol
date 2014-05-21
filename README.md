@@ -523,8 +523,8 @@ There are many cases where a delete could fail with a properly functioning drive
 
 
 ### Flush
-The `FLUSH_ALL_DATA` operation flushes any outstanding PUTs or DELETEs on the device. For example, if the client `PUT` many keys with `synchronization=WRITEBACK` the data
-would not be guaranteed to be persisted, so power cycling could result in lost data. When a `FLUSH_ALL_DATA` command returns, all previous operations with `synchronization=WRITEBACK` on
+The `FLUSHALLDATA` operation flushes any outstanding PUTs or DELETEs on the device. For example, if the client `PUT` many keys with `synchronization=WRITEBACK` the data
+would not be guaranteed to be persisted, so power cycling could result in lost data. When a `FLUSHALLDATA` command returns, all previous operations with `synchronization=WRITEBACK` on
 this connection are guaranteed to be persisted. Data on separate connections is not guaranteed to be persisted, but may as an indirect consequence of this operation.
 
 **Request Message**
@@ -539,8 +539,8 @@ command {
     identity: ...
     connectionID: ...
     sequence: ...
-    // messageType should be FLUSH_ALL_DATA
-    messageType: FLUSH_ALL_DATA
+    // messageType should be FLUSHALLDATA
+    messageType: FLUSHALLDATA
   }
   body {
   }
@@ -559,13 +559,13 @@ command {
   header {
     ackSequence: ...
 
-    // messageType should be FLUSH_ALL_DATA_RESPONSE
-    messageType: FLUSH_ALL_DATA_RESPONSE
+    // messageType should be FLUSHALLDATA_RESPONSE
+    messageType: FLUSHALLDATA_RESPONSE
   }
   body {
   }
   status {
-  // A successful FLUSH_ALL_DATA will return SUCCESS
+  // A successful FLUSHALLDATA will return SUCCESS
     code: SUCCESS
   }
 }
@@ -574,7 +574,7 @@ hmac: "..."
 ```
 
 **Permissions**
-Having unrestricted `WRITE` or `DELETE` permissions is sufficient to execute a `FLUSH_ALL_DATA` command.
+Having unrestricted `WRITE` or `DELETE` permissions is sufficient to execute a `FLUSHALLDATA` command.
 
 
 ## Read Operations
