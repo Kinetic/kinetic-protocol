@@ -1251,6 +1251,7 @@ The `GETLOG` operation gives the client access to log information. The request m
 * `STATISTICS`
 * `MESSAGES`
 * `LIMITS`
+* `KINETICSMART`
 
 Below we will show the message structure used to request all types in a single `GETLOG` request.
 
@@ -1278,6 +1279,7 @@ command {
       type: STATISTICS
       type: TEMPERATURES
       type: UTILIZATIONS
+      type: KINETICSMART
     }
   }
 }
@@ -1303,6 +1305,7 @@ command {
       type: TEMPERATURES
       type: UTILIZATIONS
       type: LIMITS
+      type: KINETICSMART
       
       // Many utilization messages may be returned
       utilization {
@@ -1412,6 +1415,17 @@ command {
         maxOutstandingWriteRequests = ...
         maxMessageSize = ...
         maxKeyRangeCount = ...
+      }
+
+      // A message for each SMART attribute will be returned
+      attribute {
+        // Required string, the name of the SMART attribute being reported
+        name: "..."
+
+        // Required float, the current value of the attribute
+        value: 100.0
+        // Required float, the worst value of the attribute
+        worst: 100.0
       }
     }
   }
