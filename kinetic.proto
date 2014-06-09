@@ -334,6 +334,7 @@ message Message {
       STATISTICS = 4;
       MESSAGES = 5;
       LIMITS = 6;
+      KINETICSMART = 7;
     }
 
     repeated Utilization utilization = 2;
@@ -343,6 +344,7 @@ message Message {
     repeated Statistics statistics = 6;
     optional bytes messages = 7;
     optional Limits limits = 8;
+    optional KineticSMART kineticSMART = 9;
 
     message Utilization {
 
@@ -441,6 +443,17 @@ message Message {
       optional uint32 maxOutstandingWriteRequests = 7;
       optional uint32 maxMessageSize = 8;
       optional uint32 maxKeyRangeCount = 9;
+    }
+
+    message KineticSMART {
+      repeated Attribute attribute = 1;
+
+      message Attribute {
+        optional string name = 1;
+        optional float value = 2;
+        optional float worst = 3;
+      }
+      
     }
 
   }
