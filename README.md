@@ -272,16 +272,17 @@ When an error occurs on the Kinetic Device, the response message includes a `sta
 * `NO_SPACE` indicates that the drive is full. There are background processes which may free space, so this error may occur once, and not on subsequent tries even though no data has been explicitly removed. Similarly, executing a delete may not immediately free space, so a `PUT` which fails with this error may not immediately succeed even after a `DELETE` which should free space.
 * `NO_SUCH_HMAC_ALGORITHM` indicates that the `hmacAlgorithm` field in the `Security` message was invalid.
 * `INVALID_REQUEST` indicates that the request is not valid. Subsequent attempts with the same request will return the same code. Examples: GET does not specify keyValue message, GETKEYRANGE operation does not specify startKey, etc.
+* `NOT_ATTEMPTED` indicates that a P2P operation was received but was not even attempted due to some other error halting execution early.
+* `REMOTE_CONNECTION_ERROR` indicates that a P2P operation was attempted but could not be completed. 
+
 
 A number of error codes are defined in the protocol file but not currently used:
 
-* `NOT_ATTEMPTED`
 * `HEADER_REQUIRED`
 * `SERVICE_BUSY`
 * `EXPIRED`
 * `DATA_ERROR`
 * `PERM_DATA_ERROR`
-* `REMOTE_CONNECTION_ERROR`
 
 It is possible that an error will occur that will prevent the Kinetic Device from returning a `protobuf` message with a status code. These are some situations:
 
