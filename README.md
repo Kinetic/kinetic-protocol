@@ -273,7 +273,8 @@ When an error occurs on the Kinetic Device, the response message includes a `sta
 * `NO_SUCH_HMAC_ALGORITHM` indicates that the `hmacAlgorithm` field in the `Security` message was invalid.
 * `INVALID_REQUEST` indicates that the request is not valid. Subsequent attempts with the same request will return the same code. Examples: GET does not specify keyValue message, GETKEYRANGE operation does not specify startKey, etc.
 * `NOT_ATTEMPTED` indicates that a P2P operation was received but was not even attempted due to some other error halting execution early.
-* `REMOTE_CONNECTION_ERROR` indicates that a P2P operation was attempted but could not be completed. 
+* `REMOTE_CONNECTION_ERROR` indicates that a P2P operation was attempted but could not be completed.
+* `NESTED_OPERATION_ERRORS` indicates that a P2P request completed but that an operation (possibly nested) failed.
 
 
 A number of error codes are defined in the protocol file but not currently used:
