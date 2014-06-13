@@ -1545,10 +1545,13 @@ hmac: ""
 
 Error Cases:
 
-For each P2POperation, if any of it's nested operations fail, then it will have the flag `allChildOperationsSucceeded` set to false. Otherwise, that flag will be set to true.
+If the command does not start or is terminated early, the status will be reflect that error.
+
+If the request completed but some operations encountered errors, the message will be `NESTED_OPERATION_ERRORS`.
 
 If all operations and nested P2P Operations within the top-level operation are successful, the `Status.code` in the `Command` message will be `SUCCESS`.
-If the request completed but some errors occurred, the message will be `NESTED_OPERATION_ERRORS`.
+
+For each P2POperation, if any of it's nested operations fail, then it will have the flag `allChildOperationsSucceeded` set to false. Otherwise, that flag will be set to true.
 
 Any operation may fail for the same reason any `PUT` could fail. Operation's have their own `Status` message to report these failures.
 In addition to the failures observed by `PUT`, Operations may experience:
