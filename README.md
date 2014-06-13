@@ -275,13 +275,13 @@ When an error occurs on the Kinetic Device, the response message includes a `sta
 * `NOT_ATTEMPTED` indicates that a P2P operation was received but was not even attempted due to some other error halting execution early.
 * `REMOTE_CONNECTION_ERROR` indicates that a P2P operation was attempted but could not be completed.
 * `NESTED_OPERATION_ERRORS` indicates that a P2P request completed but that an operation (possibly nested) failed.
+* `EXPIRED` indicates that an operation did not complete in the alotted time.
 
 
 A number of error codes are defined in the protocol file but not currently used:
 
 * `HEADER_REQUIRED`
 * `SERVICE_BUSY`
-* `EXPIRED`
 * `DATA_ERROR`
 * `PERM_DATA_ERROR`
 
