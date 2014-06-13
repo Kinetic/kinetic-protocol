@@ -1499,6 +1499,8 @@ command {
   }
   body {
     p2pOperation {
+      // See below for a description of error handling
+      allChildOperationsSucceeded: false,
       operation {
         key: "..."
         newKey: "..."
@@ -1512,6 +1514,8 @@ command {
             port: ...
             tls: false
           }
+          // See below for a description of error handling
+          allChildOperationsSucceeded: false,
           operation {
             key: "..."
 			status {
@@ -1523,7 +1527,7 @@ command {
           operation: {
           	key: "...",
           	status {
-          		code: SUCCESS
+          		code: NESTED_OPERATION_ERRORS
           	}
           }
         }
@@ -1539,7 +1543,13 @@ hmac: ""
 
 Error Cases:
 
-* `code=NOT_FOUND` if the key is not found on the source peer. The push will not be attempted
-* `code=INTERNAL_ERROR`
-	* if there is a version mismatch between the operation's version and the destination peer's dbVersion
-	* if an unexpected malfunction occurs.
+For each P2POperation, if any of it's nested operations fail, then it will have the flag `allChildOperationsSucceeded` set to false. Otherwise, that flag will be set to true.
+
+If all operations and nested P2P Operations within the top-level operation are successful, the `Status.code` in the `Command` message will be `SUCCESS`.
+If the request completed but some errors occurred, the message will be `NESTED_OPERATION_ERRORS`.
+
+Any operation may fail for the same reason any `PUT` could fail. Operation's have their own `Status` message to report these failures.
+In addition to the failures observed by `PUT`, Operations may experience:
+
+* `NOT_ATTEMPTED` The top level request was aborted before this operation could be attempted, either due to timeouts or another error (e.g. an IO error).
+* `REMOTE_CONNECTION_ERROR` The operation was attempted, but an error prevented the operation from completing.
