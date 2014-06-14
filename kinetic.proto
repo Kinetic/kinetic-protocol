@@ -186,6 +186,12 @@ message Message {
       // The request is not valid. Subsequent attempts with the same request will return the same code.
       // Examples: GET does not specify keyValue message, GETKEYRANGE operation does not specify startKey, etc
       INVALID_REQUEST = 16;
+
+      // For P2P Requests, the operation was executed successfully but some nested operations
+      // did not succeed. This indicates that callers should review the status of nested operations.
+      // This status should only be used in the Command > Status, not in the Status messages
+      // of nested P2POperations
+      NESTED_OPERATION_ERRORS = 17;
     }
 
   }
@@ -295,6 +301,12 @@ message Message {
     optional Peer peer = 1;
     // List of operations to be performed.
     repeated Operation operation = 2;
+
+    // Indicates whether all operations have Status SUCCESS
+    // When false, clients should traverse Operation status codes to discover
+    // error cases.
+    // When true, no further error checking should be required.
+    optional bool allChildOperationsSucceeded = 3;
 
     message Operation {
       // the key of the entry to move

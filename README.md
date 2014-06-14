@@ -272,16 +272,18 @@ When an error occurs on the Kinetic Device, the response message includes a `sta
 * `NO_SPACE` indicates that the drive is full. There are background processes which may free space, so this error may occur once, and not on subsequent tries even though no data has been explicitly removed. Similarly, executing a delete may not immediately free space, so a `PUT` which fails with this error may not immediately succeed even after a `DELETE` which should free space.
 * `NO_SUCH_HMAC_ALGORITHM` indicates that the `hmacAlgorithm` field in the `Security` message was invalid.
 * `INVALID_REQUEST` indicates that the request is not valid. Subsequent attempts with the same request will return the same code. Examples: GET does not specify keyValue message, GETKEYRANGE operation does not specify startKey, etc.
+* `NOT_ATTEMPTED` indicates that a P2P operation was received but was not even attempted due to some other error halting execution early.
+* `REMOTE_CONNECTION_ERROR` indicates that a P2P operation was attempted but could not be completed.
+* `NESTED_OPERATION_ERRORS` indicates that a P2P request completed but that an operation (possibly nested) failed.
+* `EXPIRED` indicates that an operation did not complete in the alotted time.
+
 
 A number of error codes are defined in the protocol file but not currently used:
 
-* `NOT_ATTEMPTED`
 * `HEADER_REQUIRED`
 * `SERVICE_BUSY`
-* `EXPIRED`
 * `DATA_ERROR`
 * `PERM_DATA_ERROR`
-* `REMOTE_CONNECTION_ERROR`
 
 It is possible that an error will occur that will prevent the Kinetic Device from returning a `protobuf` message with a status code. These are some situations:
 
@@ -1499,6 +1501,8 @@ command {
   }
   body {
     p2pOperation {
+      // See below for a description of error handling
+      allChildOperationsSucceeded: false,
       operation {
         key: "..."
         newKey: "..."
@@ -1512,6 +1516,8 @@ command {
             port: ...
             tls: false
           }
+          // See below for a description of error handling
+          allChildOperationsSucceeded: false,
           operation {
             key: "..."
 			status {
@@ -1523,7 +1529,7 @@ command {
           operation: {
           	key: "...",
           	status {
-          		code: SUCCESS
+          		code: NESTED_OPERATION_ERRORS
           	}
           }
         }
@@ -1539,7 +1545,16 @@ hmac: ""
 
 Error Cases:
 
-* `code=NOT_FOUND` if the key is not found on the source peer. The push will not be attempted
-* `code=INTERNAL_ERROR`
-	* if there is a version mismatch between the operation's version and the destination peer's dbVersion
-	* if an unexpected malfunction occurs.
+If the command does not start or is terminated early, the status will be reflect that error.
+
+If the request completed but some operations encountered errors, the message will be `NESTED_OPERATION_ERRORS`.
+
+If all operations and nested P2P Operations within the top-level operation are successful, the `Status.code` in the `Command` message will be `SUCCESS`.
+
+For each P2POperation, if any of it's nested operations fail, then it will have the flag `allChildOperationsSucceeded` set to false. Otherwise, that flag will be set to true.
+
+Any operation may fail for the same reason any `PUT` could fail. Operation's have their own `Status` message to report these failures.
+In addition to the failures observed by `PUT`, Operations may experience:
+
+* `NOT_ATTEMPTED` The top level request was aborted before this operation could be attempted, either due to timeouts or another error (e.g. an IO error).
+* `REMOTE_CONNECTION_ERROR` The operation was attempted, but an error prevented the operation from completing.
