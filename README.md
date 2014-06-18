@@ -1547,13 +1547,13 @@ Error Cases:
 
 If the command does not start or is terminated early, the status will be reflect that error.
 
-If the request completed but some operations encountered errors, the message will be `NESTED_OPERATION_ERRORS`.
+If the request completed but some operations encountered errors, the code will be `NESTED_OPERATION_ERRORS`.
 
 If all operations and nested P2P Operations within the top-level operation are successful, the `Status.code` in the `Command` message will be `SUCCESS`.
 
-For each P2POperation, if any of it's nested operations fail, then it will have the flag `allChildOperationsSucceeded` set to false. Otherwise, that flag will be set to true.
+For each P2POperation, if any of its nested operations fail, then it will have the flag `allChildOperationsSucceeded` set to false. Otherwise, that flag will be set to true.
 
-Any operation may fail for the same reason any `PUT` could fail. Operation's have their own `Status` message to report these failures.
+Any operation may fail for the same reason any `PUT` could fail. Operations have their own `Status` message to report these failures.
 In addition to the failures observed by `PUT`, Operations may experience:
 
 * `NOT_ATTEMPTED` The top level request was aborted before this operation could be attempted, either due to timeouts or another error (e.g. an IO error).
