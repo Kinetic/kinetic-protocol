@@ -58,7 +58,9 @@ message Message {
 
     // "cluster" is the version number of the cluster definition. If this is incompatible,
     // the request is rejected. If it is missing, it is assumed to be 0. (0 allows systems not
-    // using cluster vesioning to ignore this field in the header and in the setup.)
+    // using cluster versioning to ignore this field in the header and in the setup.)
+    // Additionally, the drive will set this to the actual cluster version in the response
+    // to a message with an incorrect clusterVerion
     optional int64 clusterVersion = 1;
 
     // The hmac of the request provides the authentication and (indirectly) the authority of the identity.
