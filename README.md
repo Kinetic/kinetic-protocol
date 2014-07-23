@@ -174,10 +174,11 @@ There are many fields in the `protobuf` message which can be specified on many o
 ```
 command {
   header {
-  	// Optional int64, default value is 0
+    // Optional int64, default value is 0
     // The version number of this cluster definition. If this is not equal to 
     // the value on the device, the request is rejected and will return a 
-    // `VERSION_FAILURE` `statusCode` in the `Status` message.
+    // `VERSION_FAILURE` `statusCode` in the `Status` message. Additionally,
+    // the response will contain the correct clusterVersion in this field.    
     clusterVersion: ...
 
     // Required int64
