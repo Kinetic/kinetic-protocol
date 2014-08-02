@@ -392,7 +392,8 @@ message Message {
 			optional bool firmwareDownload = 5;
 
 			// sets the erase pin for the pin authorized erase commands.
-			// 0 length or null pin is NOT allowed and an error returned.
+			// 0 length or null pin is NOT allowed and an INVALID_REQUEST
+			// error is returned.
 			optional bytes newErasePin = 6;
 
 			// Sets the lock unlock pin. When enabled the device has the
