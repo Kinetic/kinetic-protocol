@@ -142,9 +142,7 @@ message Message {
 		// using cluster versioning to ignore this field in the header and in the setup.)
 			optional int64 clusterVersion = 1;
 
-			// The hmac of the request provides the authentication and (indirectly) the authority of the identity.
-			// The "identity" identifies the requester and the key and algorithm to be used for hmac. (See security document).
-			optional int64 identity = 2;
+			// 2 is reserved.
 
 			// A unique number for this connection between the source and target. On the first request
 			// to the device, this should be the time of day in seconds since 1970. The device can change this
@@ -180,6 +178,8 @@ message Message {
 			// Once all possible data recovery operations are complete and have not succeeded, PERM_DATA_ERROR will be
 			// returned.
 			optional bool earlyExit = 10;
+
+			// 11 is reserved
 
 			// Priority is a simple integer that determines the priority of this
 			// request. All activity at a higher priority will execute before that
@@ -303,6 +303,8 @@ message Message {
 		//key/value entry operation
 		message KeyValue {
 
+		// 1 is reserved
+
 		// On a put or delete, this is the next version that the data will be. The version field is opaque to the
 		// target. (See Atomic operations document)
 			optional bytes newVersion = 2;
@@ -364,8 +366,10 @@ message Message {
 			// the system will return "k2" and "k1" in that order.
 			optional bool reverse = 6;
 
+			// 7 is reserved;
+
 			//get range response .
-			repeated bytes key = 8;
+			repeated bytes keys = 8;
 		}
 
 		//set up operation.
@@ -412,6 +416,9 @@ message Message {
 			// When true, no further error checking should be required.
 			optional bool allChildOperationsSucceeded = 3;
 			message Operation {
+
+			// 1 and 2 are reserved
+
 			// the key of the entry to move
 				optional bytes key = 3;
 				// the expected version number in the other machine
@@ -440,7 +447,7 @@ message Message {
 
 		//get log
 		message GetLog {
-			repeated Type type = 1;
+			repeated Type types = 1;
 			enum Type {
 				INVALID_TYPE = -1; // Must come first, so default is invalid
 				UTILIZATIONS = 0;
@@ -453,8 +460,8 @@ message Message {
 				DEVICE = 7;
 			}
 
-			repeated Utilization utilization = 2;
-			repeated Temperature temperature = 3;
+			repeated Utilization utilizations = 2;
+			repeated Temperature temperatures = 3;
 			optional Capacity capacity = 4;
 			optional Configuration configuration = 5;
 			repeated Statistics statistics = 6;
@@ -594,7 +601,7 @@ message Message {
 				// is rejected
 				repeated Scope scope = 4;
 				enum HMACAlgorithm {
-					INVALID_HMAC_ALGORITHM = -1; // Must come first, so default is invalid
+					INVALID_HMAC_ALGORITHM = -1; // Must come first
 					// 0 is reserved; do not use
 					HmacSHA1 = 1; // this is the default
 				}
@@ -638,14 +645,14 @@ message Message {
 			// The range on the request and results on the response
 			optional Range range = 2;
 			enum BackOpType {
-				INVALID_BACKOP = 0;
+				INVALID_BACKOP = -1;
 
 				// Media scan is to check that the user data is readable, and
 				// if the end to end integrity is known to the device, if the
 				// end to end integrity field is correct.
 				MEDIASCAN = 1;
 
-				// This performes optomizations of the media. Things like
+				// This performs optimizations of the media. Things like
 				// defragmentation, compaction, garbage collection, compression
 				// could be things accomplished using the media optimize command.
 				MEDIAOPTIMIZE = 2;
