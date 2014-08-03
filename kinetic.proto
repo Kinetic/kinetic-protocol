@@ -81,46 +81,11 @@ message Message {
 		optional bytes hmac = 2;
 	}
 
-	// Pin Auth is used for special commands that are valid when the device
-	// is locked or to be locked. These are unlock, lock and erase.
-	// This must come over the TLS connection to protect the confidentiality and
-	// integrity. The request ignores the value in commandBytes. The
-	// response will return this pinAuth and will have a status in
-	// the commandBytes.
+	// Pin based authentication for Pin operations.
 	message PINauth {
 
-		// The operation
-		optional PinOp pinOp = 1;
-
 		// The pin necessary to make the operations valid
-		optional bytes pin = 2;
-		enum PinOp {
-			INVALID_PINOP = -1;
-
-			// The pin will unlock the device
-			UNLOCK_PINOP = 1;
-
-			// This will lock the device. This includes all
-			// configuration and user data. This operation is
-			// secure from even given physical access and
-			// disassembly of the device.
-			LOCK_PINOP = 2;
-
-			// Erase the device. This may be secure
-			// or not. The implication is that it may be faster
-			// than the secure operation.
-			ERASE_PINOP = 3;
-
-			// Erase the device in a way that will
-			// physical access and disassembly of the device
-			// will not
-			SECURE_ERASE_PINOP = 4;
-
-			// Both erase operations will return
-			// the device to an as manufactured state removing all
-			// user data and configuration settings.
-		}
-
+		optional bytes pin = 1;
 	}
 
 }
@@ -220,6 +185,9 @@ message Command {
 		// Defined long running commands that are device dependent and
 		// typically background operations.
 		optional BackgroundOperation backgroundOperation = 5;
+        
+        // Perform Pin-based operations
+        optional PinOperation pinOp = 8;
 	}
 
 	//operation status
@@ -647,6 +615,7 @@ message Command {
 
 		// The range on the request and results on the response
 		optional Range range = 2;
+        
 		enum BackOpType {
 			INVALID_BACKOP = -1;
 
@@ -662,6 +631,42 @@ message Command {
 		}
 
 	}
+    
+    // Pin Operations are used for special commands that are valid when the device
+	// is locked or to be locked. These are unlock, lock and erase.
+	// This must come over the TLS connection to protect the confidentiality and
+	// integrity. This operations must be used with PinAuth.    
+    message PinOperation {
+        
+        optional PinOpType pinOpType = 1;
+        
+        enum PinOpType {
+			INVALID_PINOP = -1;
+
+			// The pin will unlock the device
+			UNLOCK_PINOP = 1;
+
+			// This will lock the device. This includes all
+			// configuration and user data. This operation is
+			// secure from even given physical access and
+			// disassembly of the device.
+			LOCK_PINOP = 2;
+
+			// Erase the device. This may be secure
+			// or not. The implication is that it may be faster
+			// than the secure operation.
+			ERASE_PINOP = 3;
+
+			// Erase the device in a way that will
+			// physical access and disassembly of the device
+			// will not
+			SECURE_ERASE_PINOP = 4;
+
+			// Both erase operations will return
+			// the device to an as manufactured state removing all
+			// user data and configuration settings.
+		}
+    }
 
 	enum Priority {
 		NORMAL = 5;
