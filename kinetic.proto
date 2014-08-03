@@ -33,9 +33,9 @@ message Local {
 // THe message is an authorization and command bytes.
 message Message {
 
-// 1-3 are reserved, do not u
+	// 1-3 are reserved, do not u
 
-// Every message must be one of the following types.
+	// Every message must be one of the following types.
 	optional AuthType authType = 4;
 
 	// Normal messages
@@ -52,7 +52,7 @@ message Message {
 	// The Message Type determines how the the message is to be processed.
 	enum AuthType {
 
-	// if the message type is unknown, close the connection
+		// if the message type is unknown, close the connection
 		INVALID_AUTH_TYPE = -1;
 
 		// This is for normal traffic. Check the HMAC of the command and
@@ -75,8 +75,8 @@ message Message {
 	// authenticity, Integrity and to enforce roles.
 	message HMACauth {
 
-	// The "identity" identifies the requester and the key and algorithm to
-	// be used for hmac.
+		// The "identity" identifies the requester and the key and algorithm to
+		// be used for hmac.
 		optional int64 identity = 1;
 		optional bytes hmac = 2;
 	}
@@ -89,7 +89,7 @@ message Message {
 	// the commandBytes.
 	message PINauth {
 
-	// The operation
+		// The operation
 		optional PinOp pinOp = 1;
 
 		// The pin necessary to make the operations valid
@@ -139,9 +139,9 @@ message Command {
 	//message header
 	message Header {
 
-	// "cluster" is the  number of the cluster definition. If this is incompatible,
-	// the request is rejected. If it is missing, it is assumed to be 0. (0 allows systems not
-	// using cluster versioning to ignore this field in the header and in the setup.)
+		// "cluster" is the  number of the cluster definition. If this is incompatible,
+		// the request is rejected. If it is missing, it is assumed to be 0. (0 allows systems not
+		// using cluster versioning to ignore this field in the header and in the setup.)
 		optional int64 clusterVersion = 1;
 
 		// 2 is reserved.
@@ -199,7 +199,7 @@ message Command {
 	//message body
 	message Body {
 
-	//key/value op
+		//key/value op
 		optional KeyValue keyValue = 1;
 
 		//range operation
@@ -224,7 +224,7 @@ message Command {
 
 	//operation status
 	message Status {
-	//status code
+		//status code
 		optional StatusCode code = 1;
 		//status message
 		optional string statusMessage = 2;
@@ -233,7 +233,7 @@ message Command {
 
 		//enum of status code
 		enum StatusCode {
-		// Must come first, so default is invalid
+			// Must come first, so default is invalid
 			INVALID_STATUS_CODE = -1;
 
 			//  for a P2P operation, there was a reason the list was incomplete. This is for items
@@ -305,10 +305,10 @@ message Command {
 	//key/value entry operation
 	message KeyValue {
 
-	// 1 is reserved
+		// 1 is reserved
 
-	// On a put or delete, this is the next version that the data will be. The version field is opaque to the
-	// target. (See Atomic operations document)
+		// On a put or delete, this is the next version that the data will be. The version field is opaque to the
+		// target. (See Atomic operations document)
 		optional bytes newVersion = 2;
 
 		// On a put or delete, this forces the write to ignore the existing version of existing data (if it exists).
@@ -381,9 +381,9 @@ message Command {
 	// erased on either PIN erase or PIN secure erase.
 	message Setup {
 
-	// The cluster version to be checked. The default if never set is 0.
-	// If this is missing, it is assumed to be unchanged;
-	// This is persistent between boots of the device.
+		// The cluster version to be checked. The default if never set is 0.
+		// If this is missing, it is assumed to be unchanged;
+		// This is persistent between boots of the device.
 		optional int64 newClusterVersion = 1;
 
 		// 2, 3, 4 are reserved.
@@ -408,7 +408,7 @@ message Command {
 	// this is either a standalone command or added to a put command.
 	message P2POperation {
 
-	// Describe the target machine
+		// Describe the target machine
 		optional Peer peer = 1;
 		// List of operations to be performed.
 		repeated Operation operation = 2;
@@ -420,9 +420,9 @@ message Command {
 		optional bool allChildOperationsSucceeded = 3;
 		message Operation {
 
-		// 1 and 2 are reserved
+			// 1 and 2 are reserved
 
-		// the key of the entry to move
+			// the key of the entry to move
 			optional bytes key = 3;
 			// the expected version number in the other machine
 			// the version number will be the version in the stored entry.
@@ -473,9 +473,9 @@ message Command {
 		optional Device device = 9;
 		message Utilization {
 
-		// The name of the utilization being reported. These names can be standard and proprietary. The
-		// standard names are "HDA", "EN0" and "EN1". If there are more items that are
-		// being reported, such as processor utilization, can have a descriptive name.
+			// The name of the utilization being reported. These names can be standard and proprietary. The
+			// standard names are "HDA", "EN0" and "EN1". If there are more items that are
+			// being reported, such as processor utilization, can have a descriptive name.
 			optional string name = 1;
 
 			// A number between 0.00 and 1.00. The resolution of this number is up to the
@@ -485,9 +485,9 @@ message Command {
 
 		message Temperature {
 
-		// The name of the temperature being reported. These names can be standard and proprietary. The
-		// standard name is "HDA". If there are more items that are
-		// being reported, such as processor temperature, can have a descriptive name.
+			// The name of the temperature being reported. These names can be standard and proprietary. The
+			// standard name is "HDA". If there are more items that are
+			// being reported, such as processor temperature, can have a descriptive name.
 			optional string name = 1;
 
 			// The current temperature in degrees c
@@ -499,14 +499,14 @@ message Command {
 
 		// These capacities are in bytes.
 		message Capacity {
-		// 1-3 are reserved
+			// 1-3 are reserved
 			optional uint64 nominalCapacityInBytes = 4;
 			optional float portionFull = 5;
 		}
 
 		message Configuration {
 
-		// name of the vendor. Should be "Seagate"
+			// name of the vendor. Should be "Seagate"
 			optional string vendor = 5;
 
 			// The model of the device.
@@ -642,7 +642,7 @@ message Command {
 	// background operations are not being performed.
 	message BackgroundOperation {
 
-	// Determine the operation type
+		// Determine the operation type
 		optional BackOpType backOpType = 1;
 
 		// The range on the request and results on the response
