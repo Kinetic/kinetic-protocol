@@ -186,8 +186,8 @@ message Command {
 		// typically background operations.
 		optional BackgroundOperation backgroundOperation = 5;
         
-        // Perform Pin-based operations
-        optional PinOperation pinOp = 8;
+        	// Perform Pin-based operations
+        	optional PinOperation pinOp = 8;
 	}
 
 	//operation status
