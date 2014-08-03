@@ -632,15 +632,15 @@ message Command {
 
 	}
     
-    // Pin Operations are used for special commands that are valid when the device
+    	// Pin Operations are used for special commands that are valid when the device
 	// is locked or to be locked. These are unlock, lock and erase.
 	// This must come over the TLS connection to protect the confidentiality and
 	// integrity. This operations must be used with PinAuth.    
-    message PinOperation {
+    	message PinOperation {
         
-        optional PinOpType pinOpType = 1;
-        
-        enum PinOpType {
+	        optional PinOpType pinOpType = 1;
+	        
+	        enum PinOpType {
 			INVALID_PINOP = -1;
 
 			// The pin will unlock the device
@@ -666,7 +666,7 @@ message Command {
 			// the device to an as manufactured state removing all
 			// user data and configuration settings.
 		}
-    }
+    	}
 
 	enum Priority {
 		NORMAL = 5;
