@@ -114,7 +114,7 @@ message Message {
 			// Erase the device in a way that will
 			// physical access and disassembly of the device
 			// will not
-			SECURE_ERASE_PINOP = 3;
+			SECURE_ERASE_PINOP = 4;
 
 			// Both erase operations will return
 			// the device to an as manufactured state removing all
@@ -714,8 +714,8 @@ message Message {
 			NOOP_RESPONSE = 29;
 			FLUSHALLDATA = 32;
 			FLUSHALLDATA_RESPONSE = 31;
-			BACKOP = 32;
-			BACKOP_RESPONSE = 31;
+			BACKOP = 34; // background operations
+			BACKOP_RESPONSE = 33;
 		}
 
 	}
