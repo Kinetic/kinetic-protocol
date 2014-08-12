@@ -499,19 +499,13 @@ message Command {
 
 			// 18, 19 are reserved.
 
-			// Set the lock and erase pins.
-			// This is only used when the lock and erase pins are NOT set. If the
-			// lock and erase pins are set, you must use pinops to change the pins.
-			// To remove an existing Pin you must use a pinop.
-			optional bytes lockPIN = 20;
-			optional bytes erasePIN = 21;
-
 			message Interface {
 				optional string name = 1;
 				optional bytes MAC = 2;
 				optional bytes ipv4Address = 3;
 				optional bytes ipv6Address = 4;
 			}
+
 		}
 
 		// These numbers start at 0 when the device starts up and never wraps or resets.
@@ -552,12 +546,21 @@ message Command {
 		message Device {
 			optional bytes name = 1;
 		}
+
 	}
 
 	// These are persistent options that are retained across power fail and
 	// erased on either PIN erase or PIN secure erase.
 	message Security {
 		repeated ACL acl = 2; // one per identity
+
+		// Set the lock and erase pins.
+		optional bytes oldLockPIN = 3;
+		optional bytes newLockPIN = 4;
+		optional bytes oldErasePIN = 5;
+		optional bytes newErasePIN = 6;
+
+		//
 		message ACL {
 			optional int64 identity = 1;
 			optional bytes key = 2; // the HMAC key
@@ -634,11 +637,6 @@ message Command {
 	message PinOperation {
 		optional PinOpType pinOpType = 1;
 
-		// New pin used for SET_LOCKPIN_PINOP or SET_ERASEPIN_PINOP operations.
-		// Setting the pin to "" turns the lock off and requires HMAC auth command
-		// to set the pin again.
-		optional bytes newPin = 2;
-
 		enum PinOpType {
 			INVALID_PINOP = -1;
 
@@ -664,18 +662,7 @@ message Command {
 			// physical access and disassembly of the device
 			// will not
 			SECURE_ERASE_PINOP = 4;
-
-			// Sets the lock unlock pin. When enabled the device has the
-			// ability to be securely locked. Entering or changing the lock
-			// unlock pin does not erase the device.
-			SET_LOCKPIN_PINOP = 5;
-
-			// sets the erase pin for the pin authorized erase commands.
-			// 0 length or null pin is NOT allowed and an INVALID_REQUEST
-			// error is returned.
-			SET_ERASEPIN_PINOP = 6;
 		}
-
 	}
 
 	enum Priority {
