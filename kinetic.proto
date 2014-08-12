@@ -723,6 +723,8 @@ message Command {
 		FLUSHALLDATA_RESPONSE = 31;
 		BACKOP = 34; // background operations
 		BACKOP_RESPONSE = 33;
+		PINOP = 36; // Pin based operations
+		PINOP_RESPONSE = 35;
 	}
 
 }
