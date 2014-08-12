@@ -360,11 +360,6 @@ message Command {
 		// message. The firmware is itself protected on its own for integrity,
 		// authenticity, etc.
 		optional bool firmwareDownload = 5;
-
-		// sets the erase pin for the pin authorized erase commands.
-		// 0 length or null pin is NOT allowed and an INVALID_REQUEST
-		// error is returned.
-		optional bytes newErasePin = 6;
 	}
 
 	// P2P operations allow devices to be able to send keys to other devices.
@@ -635,7 +630,8 @@ message Command {
         
 	        optional PinOpType pinOpType = 1;
 	        
-		optional bytes newLockPin = 2;
+	        // New pin used for SET_LOCKPIN_PINOP or SET_ERASEPIN_PINOP operations
+		optional bytes newPin = 2;
 			
 	        enum PinOpType {
 			INVALID_PINOP = -1;
@@ -667,6 +663,11 @@ message Command {
 			// ability to be securely locked. Entering or changing the lock
 			// unlock pin does not erase the device.
 			SET_LOCKPIN_PINOP = 5;
+			
+			// sets the erase pin for the pin authorized erase commands.
+			// 0 length or null pin is NOT allowed and an INVALID_REQUEST
+			// error is returned.
+			SET_ERASEPIN_PINOP = 6;
 		}
     	}
 
