@@ -365,11 +365,6 @@ message Command {
 		// 0 length or null pin is NOT allowed and an INVALID_REQUEST
 		// error is returned.
 		optional bytes newErasePin = 6;
-
-		// Sets the lock unlock pin. When enabled the device has the
-		// ability to be securely locked. Entering or changing the lock
-		// unlock pin does not erase the device.
-		optional bytes newLockPin = 7;
 	}
 
 	// P2P operations allow devices to be able to send keys to other devices.
@@ -640,6 +635,8 @@ message Command {
         
 	        optional PinOpType pinOpType = 1;
 	        
+		optional bytes newLockPin = 2;
+			
 	        enum PinOpType {
 			INVALID_PINOP = -1;
 
@@ -652,6 +649,10 @@ message Command {
 			// disassembly of the device.
 			LOCK_PINOP = 2;
 
+			// Both erase operations will return
+			// the device to an as manufactured state removing all
+			// user data and configuration settings.
+			
 			// Erase the device. This may be secure
 			// or not. The implication is that it may be faster
 			// than the secure operation.
@@ -662,9 +663,10 @@ message Command {
 			// will not
 			SECURE_ERASE_PINOP = 4;
 
-			// Both erase operations will return
-			// the device to an as manufactured state removing all
-			// user data and configuration settings.
+			// Sets the lock unlock pin. When enabled the device has the
+			// ability to be securely locked. Entering or changing the lock
+			// unlock pin does not erase the device.
+			SET_LOCKPIN_PINOP = 5;
 		}
     	}
 
@@ -703,12 +705,14 @@ message Command {
 		GETPREVIOUS_RESPONSE = 9;
 		GETKEYRANGE = 12;
 		GETKEYRANGE_RESPONSE = 11;
-
+		
 		// 13 and 14 are reserved, do not use
+		
 		GETVERSION = 16;
 		GETVERSION_RESPONSE = 15;
-
+		
 		// 17, 18, 19, and 20 are reserved, do not use
+		
 		SETUP = 22;
 		SETUP_RESPONSE = 21;
 		GETLOG = 24;
