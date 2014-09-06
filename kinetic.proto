@@ -176,15 +176,13 @@ message Command {
 		// Peer to Peer operations.
 		optional P2POperation p2pOperation = 4;
 
+		// 5 is reserved.
+
 		//GetLog
 		optional GetLog getLog = 6;
 
 		//set up security
 		optional Security security = 7;
-
-		// Defined long running commands that are device dependent and
-		// typically background operations.
-		optional BackgroundOperation backgroundOperation = 5;
 
 		// Perform Pin-based operations
 		optional PinOperation pinOp = 8;
@@ -498,7 +496,6 @@ message Command {
 			optional int32 tlsPort = 11;
 
 			// 18, 19 are reserved.
-
 			message Interface {
 				optional string name = 1;
 				optional bytes MAC = 2;
@@ -603,40 +600,12 @@ message Command {
 
 	}
 
-	// These are long running background operations. The value of the
-	// system controlling background operations is that the system
-	// can make sure that during high performance periods that
-	// background operations are not being performed.
-	message BackgroundOperation {
-
-	// Determine the operation type
-		optional BackOpType backOpType = 1;
-
-		// The range on the request and results on the response
-		optional Range range = 2;
-		enum BackOpType {
-			INVALID_BACKOP = -1;
-
-			// Media scan is to check that the user data is readable, and
-			// if the end to end integrity is known to the device, if the
-			// end to end integrity field is correct.
-			MEDIASCAN = 1;
-
-			// This performs optimizations of the media. Things like
-			// defragmentation, compaction, garbage collection, compression
-			// could be things accomplished using the media optimize command.
-			MEDIAOPTIMIZE = 2;
-		}
-
-	}
-
 	// Pin Operations are used for special commands that are valid when the device
 	// is locked or to be locked. These are unlock, lock and erase.
 	// This must come over the TLS connection to protect the confidentiality and
-	// integrity. This operations must be used with PinAuth.    
+	// integrity. This operations must be used with PinAuth.
 	message PinOperation {
 		optional PinOpType pinOpType = 1;
-
 		enum PinOpType {
 			INVALID_PINOP = -1;
 
@@ -663,6 +632,7 @@ message Command {
 			// will not
 			SECURE_ERASE_PINOP = 4;
 		}
+
 	}
 
 	enum Priority {
@@ -718,10 +688,22 @@ message Command {
 		NOOP_RESPONSE = 29;
 		FLUSHALLDATA = 32;
 		FLUSHALLDATA_RESPONSE = 31;
-		BACKOP = 34; // background operations
-		BACKOP_RESPONSE = 33;
+
+		// 33, 34 are reserved
 		PINOP = 36; // Pin based operations
 		PINOP_RESPONSE = 35;
+
+		// Media scan is to check that the user data is readable, and
+		// if the end to end integrity is known to the device, if the
+		// end to end integrity field is correct.
+		MEDIASCAN = 38;
+		MEDIASCAN_RESPONSE = 37;
+
+		// This performs optimizations of the media. Things like
+		// defragmentation, compaction, garbage collection, compression
+		// could be things accomplished using the media optimize command.
+		MEDIAOPTIMIZE = 40;
+		MEDIAOPTIMIZE_RESPONSE = 40;
 	}
 
 }
