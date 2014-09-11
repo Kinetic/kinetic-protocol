@@ -527,6 +527,7 @@ message Command {
 			optional uint32 maxMessageSize = 8;
 			optional uint32 maxKeyRangeCount = 9;
 			optional uint32 maxIdentityCount = 10;
+			optional uint32 maxPinSize = 11;
 		}
 
 		// The Device GetLog message is to ask the device to send back the
