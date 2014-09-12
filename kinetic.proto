@@ -27,7 +27,7 @@ option java_outer_classname = "Kinetic";
 // the protocol version number by building this message
 // and then reading the value.
 message Local {
-	optional string protocolVersion = 1 [default = "3.0.4"];
+	optional string protocolVersion = 1 [default = "3.0.5"];
 }
 
 // THe message is an authorization and command bytes.
@@ -704,7 +704,7 @@ message Command {
 		// defragmentation, compaction, garbage collection, compression
 		// could be things accomplished using the media optimize command.
 		MEDIAOPTIMIZE = 40;
-		MEDIAOPTIMIZE_RESPONSE = 40;
+		MEDIAOPTIMIZE_RESPONSE = 39;
 	}
 
 }
