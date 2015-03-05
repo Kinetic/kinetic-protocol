@@ -23,7 +23,7 @@ option java_outer_classname = "Kinetic";
 // the protocol version number by building this message
 // and then reading the value.
 message Local {
-	optional string protocolVersion = 1 [default = "3.0.6"];
+	optional string protocolVersion = 1 [default = "3.0.7"];
 }
 
 // THe message is an authorization and command bytes.
@@ -270,6 +270,9 @@ message Command {
             // and delete. This error is put against the offending command and "
             // the rest of the commands and the END_BATCH return NOT_ATTEMPTED."
             INVALID_BATCH = 21;
+
+            // drive in power down state
+            DRIVE_POWER_DOWN = 22;
 		}
 
 	}
@@ -364,6 +367,10 @@ message Command {
 		// message. The firmware is itself protected on its own for integrity,
 		// authenticity, etc.
 		optional bool firmwareDownload = 5;
+
+		// set to true to enter power down/saving state.
+		// set to false to resume to normal operational state.
+		optional bool drivePowerDown = 6;
 	}
 
 	// P2P operations allow devices to be able to send keys to other devices.
