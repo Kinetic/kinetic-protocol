@@ -23,7 +23,7 @@ option java_outer_classname = "Kinetic";
 // the protocol version number by building this message
 // and then reading the value.
 message Local {
-	optional string protocolVersion = 1 [default = "3.0.6"];
+	optional string protocolVersion = 1 [default = "3.0.7"];
 }
 
 // THe message is an authorization and command bytes.
@@ -187,27 +187,34 @@ message Command {
 
 		// Perform Pin-based operations
 		optional PinOperation pinOp = 8;
-                
+
 		// batch operation
 		// This is included in the END_BATCH and END_BATCH_RESPONSE.
 		optional Batch batch = 9;
+
+		// power management
+		optional PowerManagement power = 10;
 	}
 
-        // This is included in the END_BATCH and END_BATCH_RESPONSE.
-        message Batch {
-            // set by the client library in END_BATCH request message.
-            // the total number of operations in the batch
-            optional int32 count = 1;
+	message PowerManagement {
+		optional PowerLevel level = 1;
+	}
 
-            // set by the drive in END_BATCH_RESPONSE message.
-            // If a batch is committed successfully, all sequence Ids of those
-            // commands (PUT/DELETE) performed in the batch are
-            // added in the END_BATCH_RESPONSE message.
-            repeated int64 sequence = 2 [packed=true];
+	// This is included in the END_BATCH and END_BATCH_RESPONSE.
+	message Batch {
+		// set by the client library in END_BATCH request message.
+		// the total number of operations in the batch
+		optional int32 count = 1;
 
-            // This field is set by the drive if a batch commit failed.
-            // The first failed operation sequence in the batch is set as value.
-            optional int64 failedSequence = 3;
+		// set by the drive in END_BATCH_RESPONSE message.
+		// If a batch is committed successfully, all sequence Ids of those
+		// commands (PUT/DELETE) performed in the batch are
+		// added in the END_BATCH_RESPONSE message.
+		repeated int64 sequence = 2 [packed=true];
+
+		// This field is set by the drive if a batch commit failed.
+		// The first failed operation sequence in the batch is set as value.
+		optional int64 failedSequence = 3;
 	}
 
 	//operation status
@@ -288,9 +295,17 @@ message Command {
 			CONNECTION_TERMINATED = 20;
 
 			// During a batch operation, the only operations allowed are put "
-            // and delete. This error is put against the offending command and "
-            // the rest of the commands and the END_BATCH return NOT_ATTEMPTED."
-            INVALID_BATCH = 21;
+			// and delete. This error is put against the offending command and "
+			// the rest of the commands and the END_BATCH return NOT_ATTEMPTED."
+			INVALID_BATCH = 21;
+
+			// the status is returned to caller if commands are received when
+			// device is in hibernate state
+			HIBERNATE = 22;
+
+			// the status is returned to caller if commands are received when
+			// device is shutting down.
+			SHUTDOWN = 23;
 		}
 
 	}
@@ -522,6 +537,11 @@ message Command {
 			optional int32 port = 10;
 			optional int32 tlsPort = 11;
 
+			// The unsolicited message at the beginning of a connection will return
+			// the drive status. The only two possible values are OPERATIONAL
+			// or HIBERNATE.
+			optional PowerLevel currentPowerLevel = 18;
+
 			// 18, 19 are reserved.
 			message Interface {
 				optional string name = 1;
@@ -620,6 +640,7 @@ message Command {
 				P2POP = 5; // can do a peer to peer operation
 				GETLOG = 7; // can get log
 				SECURITY = 8; // can set up the security roles of the device
+				POWER_MANAGEMENT = 9; // can setup power management
 			}
 
 			// The maxPriority is checked against the header priority and range
@@ -737,11 +758,23 @@ message Command {
 
 		// batch operations
 		START_BATCH = 42;
-        START_BATCH_RESPONSE = 41;
-        END_BATCH = 44;
-        END_BATCH_RESPONSE = 43;
-        ABORT_BATCH = 46;
-        ABORT_BATCH_RESPONSE = 45;
+		START_BATCH_RESPONSE = 41;
+		END_BATCH = 44;
+		END_BATCH_RESPONSE = 43;
+		ABORT_BATCH = 46;
+		ABORT_BATCH_RESPONSE = 45;
+
+		// power management
+		SET_POWER_LEVEL = 48;
+		SET_POWER_LEVEL_RESPONSE = 47;
+	}
+
+	enum PowerLevel {
+		INVALID_LEVEL = -1;
+		OPERATIONAL = 1; // Fully operational mode, default mode for the drive
+		HIBERNATE = 2; // All operations will be rejected
+		SHUTDOWN = 3;
+		FAIL = 4;
 	}
 
 }
