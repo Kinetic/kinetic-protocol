@@ -193,21 +193,21 @@ message Command {
 		optional Batch batch = 9;
 	}
 
-        // This is included in the END_BATCH and END_BATCH_RESPONSE.
-        message Batch {
-            // set by the client library in END_BATCH request message.
-            // the total number of operations in the batch
-            optional int32 count = 1;
+	// This is included in the END_BATCH and END_BATCH_RESPONSE.
+	message Batch {
+		// set by the client library in END_BATCH request message.
+		// the total number of operations in the batch
+		optional int32 count = 1;
 
-            // set by the drive in END_BATCH_RESPONSE message.
-            // If a batch is committed successfully, all sequence Ids of those
-            // commands (PUT/DELETE) performed in the batch are
-            // added in the END_BATCH_RESPONSE message.
-            repeated int64 sequence = 2 [packed=true];
+		// set by the drive in END_BATCH_RESPONSE message.
+		// If a batch is committed successfully, all sequence Ids of those
+		// commands (PUT/DELETE) performed in the batch are
+		// added in the END_BATCH_RESPONSE message.
+		repeated int64 sequence = 2 [packed=true];
 
-            // This field is set by the drive if a batch commit failed.
-            // The first failed operation sequence in the batch is set as value.
-            optional int64 failedSequence = 3;
+		// This field is set by the drive if a batch commit failed.
+		// The first failed operation sequence in the batch is set as value.
+		optional int64 failedSequence = 3;
 	}
 
 	//operation status
@@ -288,9 +288,9 @@ message Command {
 			CONNECTION_TERMINATED = 20;
 
 			// During a batch operation, the only operations allowed are put "
-            // and delete. This error is put against the offending command and "
-            // the rest of the commands and the END_BATCH return NOT_ATTEMPTED."
-            INVALID_BATCH = 21;
+			// and delete. This error is put against the offending command and "
+			// the rest of the commands and the END_BATCH return NOT_ATTEMPTED."
+			INVALID_BATCH = 21;
 		}
 
 	}
@@ -556,7 +556,7 @@ message Command {
 			optional uint32 maxIdentityCount = 10;
 			optional uint32 maxPinSize = 11;
 			optional uint32 maxOperationCountPerBatch = 12;
-			optional uint32 maxBatchCountPerConnection = 13;
+			optional uint32 maxBatchCountPerDevice = 13;
 		}
 
 		// The Device GetLog message is to ask the device to send back the
@@ -737,11 +737,11 @@ message Command {
 
 		// batch operations
 		START_BATCH = 42;
-        START_BATCH_RESPONSE = 41;
-        END_BATCH = 44;
-        END_BATCH_RESPONSE = 43;
-        ABORT_BATCH = 46;
-        ABORT_BATCH_RESPONSE = 45;
+		START_BATCH_RESPONSE = 41;
+		END_BATCH = 44;
+		END_BATCH_RESPONSE = 43;
+		ABORT_BATCH = 46;
+		ABORT_BATCH_RESPONSE = 45;
 	}
 
 }
