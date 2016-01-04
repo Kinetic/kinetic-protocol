@@ -4,6 +4,45 @@ Kinetic is a key-value storage system. A Kinetic Device (e.g. a Kinetic Drive or
 ## Document Assumptions
 This document describes the structure of Protocol Buffer messages in detail. It is important to have a familiarity with the Protocol Buffer data interchange format ([https://code.google.com/p/protobuf/](https://code.google.com/p/protobuf/)). Where data types are specified with respect to fields in `protobuf` messages, the Scalar Value Types documented here: [https://developers.google.com/protocol-buffers/docs/proto](https://developers.google.com/protocol-buffers/docs/proto) will be used.
 
+## Table of Contents
+
+- [Overview](#user-content-overview)
+    - [Document Assumptions](#user-content-document-assumptions)
+- [Kinetic Protocol Data Unit Structure](#user-content-kinetic-protocol-data-unit-structure)
+        - [Protobuf Structure](#user-content-protobuf-structure)
+- [Access Control](#user-content-access-control)
+    - [Examples](#user-content-examples)
+        - [Client 1](#user-content-client-1)
+        - [Client 2](#user-content-client-2)
+- [Operation Details](#user-content-operation-details)
+    - [Overview](#user-content-overview-1)
+    - [Cross-Cutting Concerns](#user-content-cross-cutting-concerns)
+        - [Error Cases](#user-content-error-cases)
+    - [No Op](#user-content-no-op)
+    - [Modify Value Operations](#user-content-modify-value-operations)
+        - [Cross-Cutting Concerns](#user-content-cross-cutting-concerns-1)
+        - [PUT](#user-content-put)
+        - [Delete](#user-content-delete)
+        - [Flush](#user-content-flush)
+    - [Read Operations](#user-content-read-operations)
+        - [Cross-Cutting Concenrs](#user-content-cross-cutting-concenrs)
+        - [GET](#user-content-get)
+        - [Get Version](#user-content-get-version)
+        - [Get Next](#user-content-get-next)
+        - [Get Previous](#user-content-get-previous)
+        - [Get Key Range](#user-content-get-key-range)
+    - [Setup](#user-content-setup)
+        - [Set Cluster Version](#user-content-set-cluster-version)
+        - [Set Pin](#user-content-set-pin)
+        - [Instant Secure Erase](#user-content-instant-secure-erase)
+        - [Firmware Download](#user-content-firmware-download)
+    - [Administration](#user-content-administration)
+        - [Security](#user-content-security)
+        - [Get Log](#user-content-get-log)
+    - [Peer to Peer](#user-content-peer-to-peer)
+
+_Table of Contents generated with [DocToc](http://doctoc.herokuapp.com/)_
+
 # Kinetic Protocol Data Unit Structure
 A Kinetic Protocol Data Unit is composed of a Protocol Buffer (`protobuf`) message, containing operation metadata & key-value metadata, and the value. It is important to note that the value is not encoded in the `protobuf` message; it is a separate top-level component of the Kinetic PDU. 
 
