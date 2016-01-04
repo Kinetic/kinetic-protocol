@@ -1,0 +1,57 @@
+Introduction
+============
+This repository provides the code for building the kinetic-protocol library for
+these languages:
+
+* c
+* cpp
+* python
+
+Support for more languages can be added as needed in the future.
+
+Dependencies
+============
+The following versions of dependent packages are known to work well while
+building current kinetic clients from the github kinetic repository. These
+versions are recommended, while other versions may also work.
+
+* autoconf-2.69
+* protobuf-c-1.0.1
+* protobuf-compiler-2.6.0
+* gcc toolchain
+
+Build Instructions
+==================
+To build kinetic-protocol libraries, install the above mentioned dependencies,
+and run the commands mentioned in the following steps.
+
+1. To generate configure script from autotools, run autogen.sh script from top
+source directory:
+	./autogen.sh
+
+2. Run configure script from the top source directory:
+	./configure
+
+   By-default, the configure script enables kinetic-protocol library builds
+for c, cpp and disables the library build for python. It is possible to
+override this default behavior by "enable-feature" argument to configure
+script.
+
+   For example, to enable build for python,
+        ./configure --enable-python=yes
+
+Similarly, it is possible to disable c and cpp library builds with parameters
+"enable-c=no" and "enable-cpp=no"
+
+3. Build the kientic-protocol libraries from the build directory:
+	make
+
+4. Install the kientic-protocol libraries and headers:
+	make install
+
+5. Uninstall the kinetic-protocol libraries and headers:
+	make uninstall
+
+6. Clean the directory for another clean build:
+	make clean
+	make distclean
