@@ -621,7 +621,7 @@ No special permissions are required.
 ## Read Operations
 There are a number of operations which are designed to allow clients to read values from the Kinetic Device. They will be discussed in this section.
 
-### Cross-Cutting Concenrs
+### Cross-Cutting Concerns
 
 Within the `body` message of a read value operation, many fields in the `keyValue` message apply to all operations.
 
