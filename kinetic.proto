@@ -22,7 +22,7 @@ option java_outer_classname = "Kinetic";
 // the protocol version number by building this message
 // and then reading the value.
 message Local {
-	optional string protocolVersion = 1 [default = "3.0.6"];
+	optional string protocolVersion = 1 [default = "3.0.7"];
 }
 
 // THe message is an authorization and command bytes.
@@ -678,8 +678,9 @@ message Command {
 		SHA1 = 1; // see NIST
 		SHA2 = 2; // see NIST
 		SHA3 = 3; // see NIST. The length of the tag determined the length of the hash
-		CRC32 = 4; // the CRC32 is the standard Ethernet CRC32. See IEEE
-		CRC64 = 5; // The CRC is ...
+		CRC32C = 4;
+		CRC64 = 5;
+		CRC32 = 6;
 		// 7-99 are reserved.
 		// 100-inf are private algorithms.
 	}
