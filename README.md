@@ -61,10 +61,12 @@ Specifically, a Kinetic PDU is structured as follows:
 ### Protobuf Structure
 Within a Kinetic PDU, the `protobuf` message encodes the specifics of the requested operation (or response).  At a high level, each `protobuf` message contains:
 
-- A single command
-- An HMAC of the byte representation of the command
+- A required AuthType that indicates the authentication type of the Kinetic PDU message.  
+- An optional HMACauth that contains userId and HMAC of the byte representation of the Command.
+- An optional PINauth that contains byte representation of the pin.
+- a commandBytes field that contains the `protobuf` byte representation of the Command.
 
-Each command contains a:
+Each Command contains a:
 
 - Header, containing metadata about the message such as type (e.g. GET, GET_RESPONSE, PUT, PUT_RESPONSE, etc)
 - Body, containing operation-specific information, such as key-value information for PUT or key range information for GETKEYRANGE.
@@ -211,9 +213,75 @@ There are many fields in the `protobuf` message which can be specified on many o
 **Request Message**
 
 ```
-command {
+Message {
+  // required AuthType
+  // Every message must be one of the defined enum auth types (HMACAUTH|PINAUTH|UNSOLICITEDSTATUS).
+  authType: ...
+  
+  // optional HMACauth
+  // Normal messages uses this auth type
+  hmacAuth: ...
+  
+  // optional PINauth
+  // for Pin based operations. These include device unlock and
+  // device erase
+  pinAuth: ...
+  
+  // required bytes
+  // the embedded message providing the request (for HMACauth) and
+  // the response (for all auth types).
+  // the protocol buffer Command message is encoded/decoded to/from the commandBytes bytes
+  commandBytes: ...
+
+  // The Message Type determines how the the message is to be processed.
+  enum AuthType {
+    // This is for normal traffic. Check the HMAC of the command and
+    // if correct, process the command.
+    HMACAUTH: ...
+
+    // device unlock and ISE command. These must come over the TLS connection.
+    // If they do not, close the connection. If it is over
+    // the TLS connection, execute the pin operation.
+    PINAUTH: ...
+
+    // In the event that the device is going to close the connection, an
+    // unsolicited status will be returned first.
+    UNSOLICITEDSTATUS = 3;
+  }
+
+  // This is for normal message to the device
+  // and for responses. These are allowed once the
+  // device is unlocked. The HMAC provides for
+  // authenticity, Integrity and to enforce roles.
+  message HMACauth {
+    // optional int64
+    // The "identity" identifies the requester and the key and algorithm to
+    // be used for hmac.
+    identity: ...
+    
+    // optional bytes
+    // The HMAC of this message used to verify integrity. 
+    // The HMAC is taken of the byte-representaiton of the Command message of this 
+    // protobuf message. An identity-specific shared secret is used to compute the HMAC.
+    // The Kinetic Device must have the key associated with the identity in
+    // this HMACauth message.
+    // For example, in pseudocode where a computeHMAC function exists which takes 
+    // a value and an algorithm:
+    //	 hmac = computeHMAC(message.command.toBytes(), identityHMACAlgorithm)
+    hmac: ...
+  }
+
+  // Pin based authentication for Pin operations.
+  message PINauth {
+    // optional bytes
+    // The pin necessary to make the operations valid
+    pin: ...
+  }
+}
+
+Command {
   header {
-  	// Optional int64, default value is 0
+    // Optional int64, default value is 0
     // The version number of this cluster definition. If this is not equal to 
     // the value on the device, the request is rejected and will return a 
     // `VERSION_FAILURE` `statusCode` in the `Status` message.
@@ -225,7 +293,7 @@ command {
     // HMAC key (shared secret) to verify the HMAC.
     identity: ...
 
-	// Required int64
+    // Required int64
     // A unique number for this connection between the source and target. 
     // On the first request to the drive, this should be the time of day in 
     // seconds since 1970. The drive can change this number and the client must
@@ -233,12 +301,12 @@ command {
     // during the session
     connectionID: ...
 
-	// Required int64
-	// Sequence is a monotonically increasing number for each request in a TCP 
-	// connection. 
+    // Required int64
+    // Sequence is a monotonically increasing number for each request in a TCP 
+    // connection. 
     sequence: ...
 
-	// Required MessageType
+    // Required MessageType
     // The message type identifies which sort of operation this is.
     // See the MessageType enum in the protobuf definition for all potential 
     // values.
@@ -250,23 +318,27 @@ command {
 	// Omitted in this cross-cutting documentation section
   }
 }
-
-// Required bytes
-// The HMAC of this message used to verify integrity. 
-// The HMAC is taken of the byte-representaiton of the command message of this 
-// protobuf message. An identity-specific shared secret is used to compute the HMAC.
-// The Kinetic Device must have the key associated with the identity in
-// the header.
-// For example, in pseudocode where a computeHMAC function exists which takes 
-// a value and an algorithm:
-//	 hmac = computeHMAC(message.command.toBytes(), identityHMACAlgorithm)
-hmac: "..."
 ```
 
 **Response Message**
 
 ```
-command {
+Message {
+  // required AuthType
+  // see request message above.
+  authType: ...
+  
+  // optional HMACauth
+  // see request message above
+  hmacAuth: ...
+  
+  // required bytes
+  // the protocol buffer Command message is encoded/decoded to/from the commandBytes bytes
+  // see request message above
+  commandBytes: ...
+}
+  
+Command {
   header {
   	// Required int64.
     // In a response message, ackSequence will be the same as the 
@@ -292,10 +364,6 @@ command {
     code: SUCCESS
   }
 }
-// Required bytes
-// See the description for the request above. Responses will include an HMAC 
-// in addition to request, using the identity-specific key.
-hmac: ""
 
 ```
 
