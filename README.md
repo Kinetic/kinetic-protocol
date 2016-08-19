@@ -404,27 +404,46 @@ The `NOOP` operation can be used as a quick test of whether the Kinetic Device i
 **Request Message**
 
 ```
+message {
+  // See above for descriptions of these fields
+  authType: HMACAUTH
+  hmacAuth {
+    identity: ...
+    hmac: "..."
+  }
+  commandBytes: "..."
+}
+
+// human readable commandBytes (decoded from commandBytes) 
 command {
   header {
     // See above for descriptions of these fields
     clusterVersion: ...
-    identity: ...
     connectionID: ...
     sequence: ...
     // messageType should be NOOP
     messageType: NOOP
   }
 }
-hmac: "..."
 ```
 
 **Response Message**
 
 ```
+message { 
+  authType: HMACAUTH
+  hmacAuth {
+    identity: ...
+    hmac: "..."
+  }
+  commandBytes: "..."
+}
 
+// human readable commandBytes (decoded from commandBytes) 
 command {
   header {
     // See above
+    connectionID: ...
     ackSequence: ...
     
     // messageType should be NOOP_RESPONSE
@@ -434,7 +453,6 @@ command {
     code: SUCCESS
   }
 }
-hmac: ""
 ```
 
 
