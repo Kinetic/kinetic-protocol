@@ -383,7 +383,10 @@ When an error occurs on the Kinetic Device, the response message includes a `sta
 * `REMOTE_CONNECTION_ERROR` indicates that a P2P operation was attempted but could not be completed.
 * `NESTED_OPERATION_ERRORS` indicates that a P2P request completed but that an operation (possibly nested) failed.
 * `EXPIRED` indicates that an operation did not complete in the alotted time.
-
+* `DEVICE_LOCKED` indicates that the device is currently locked and can not valida the hmac. The connection is terminated after the device sent the response message.
+* `DEVICE_ALREADY_UNLOCKED` indicates that the device was already unlocked. The validity of the pin was NOT checked. The connection remains open.
+* `CONNECTION_TERMINATED` indicates that the connection is being terminated. Details as to why are set in the message string.
+* `INVALID_BATCH` If an error occurs before END BATCH is received, the device sends an unsolicited status message with status code set to INVALID BATCH and closed the connection. If an error occurs after END BATCH is received, an INVALID BATCH status message is returned and the connection is remained open. If the drive is locked or received ISE command before an END BATCH is received, the drive will return an unsolicited status message (in LOCK state) and close the connection. 
 
 A number of error codes are defined in the protocol file but not currently used:
 
