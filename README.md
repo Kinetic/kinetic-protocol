@@ -551,8 +551,6 @@ command {
     }
   }
 }
-// See above
-hmac: "..."
 ```
 
 **Response Message**
@@ -576,7 +574,6 @@ command {
     code: SUCCESS
   }
 }
-hmac: ""
 ```
 
 Error Cases:
@@ -615,8 +612,6 @@ command {
     }
   }
 }
-// See above
-hmac: "..."
 ```
 
 **Response Message**
@@ -641,8 +636,6 @@ command {
     code: SUCCESS
   }
 }
-hmac: "..."
-
 ```
 
 There are many cases where a delete could fail with a properly functioning drive. The following `status.code` values identify these cases:
@@ -675,8 +668,6 @@ command {
   body {
   }
 }
-// See above
-hmac: "..."
 ```
 
 **Response Message**
@@ -699,8 +690,6 @@ command {
     code: SUCCESS
   }
 }
-hmac: "..."
-
 ```
 
 **Permissions**
@@ -753,8 +742,6 @@ command {
     }
   }
 }
-// See above
-hmac: "..."
 ```
 
 **Response Message**
@@ -772,8 +759,8 @@ command {
   body {
     keyValue {
       // These fields are documented above
-      key: ""
-      dbVersion: ""
+      key: "..."
+      dbVersion: "..."
       tag: ""
       algorithm: SHA2
     }
@@ -782,7 +769,6 @@ command {
     code: SUCCESS
   }
 }
-hmac: "..."
 ```
 
 There are many cases where a read could fail with a properly functioning drive. The following `status.code` values identify these cases:
@@ -814,7 +800,6 @@ command {
     }
   }
 }
-hmac: "..."
 ```
 
 **Response Message**
@@ -838,7 +823,6 @@ command {
     code: SUCCESS
   }
 }
-hmac: ""
 ```
 Error Cases:
 
@@ -872,11 +856,11 @@ command {
     }
   }
 }
-// See above
-hmac: "..."
 ```
 
 **Response Message**
+
+A successful response will return the value in the top level Kinetic PDU, and will have a `SUCCESS` status:
 
 ```
 command {
@@ -891,11 +875,9 @@ command {
       // This is the key for the value that is being returned
       // This will be different from the key passed in the request
       key: "..."
-      
-      // These fields are documented above
       dbVersion: "..."
-      tag: "..."
-      algorithm: ...
+      tag: ""
+      algorithm: SHA2
     }
   }
   status {
@@ -904,8 +886,6 @@ command {
     code: SUCCESS
   }
 }
-// See above
-hmac: "..."
 ```
 
 Error Cases:
@@ -946,11 +926,11 @@ command {
     }
   }
 }
-// See above
-hmac: "..."
 ```
 
 **Response Message**
+
+A successful response will return the value in the top level Kinetic PDU, and will have a `SUCCESS` status:
 
 ```
 command {
@@ -978,8 +958,6 @@ command {
     code: SUCCESS
   }
 }
-// See above
-hmac: "..."
 ```
 
 Error Cases:
@@ -1075,7 +1053,7 @@ command {
     code: SUCCESS
   }
 }
-hmac: "..."
+
 ```
 
 
@@ -1127,7 +1105,6 @@ command {
     }
   }
 }
-hmac: ""
 ```
 
 **Response Message**
@@ -1143,13 +1120,12 @@ command {
     code: SUCCESS
   }
 }
-hmac: ""
 ```
 
 ### Set Pin
 
 ### Instant Secure Erase
-This operation should be used to erase all stored data from the device. **This operation is currently neither instant nor secure. In future versions of the application, it will be both.**
+This operation should be used to erase all stored data from the device. 
 
 **Request Message**
 
@@ -1172,7 +1148,6 @@ command {
     }
   }
 }
-hmac: ""
 ```
 
 **Response Message**
@@ -1188,7 +1163,6 @@ command {
     code: SUCCESS
   }
 }
-hmac: ""
 ```
 
 
@@ -1217,7 +1191,6 @@ command {
     }
   }
 }
-hmac: ""
 ```
 
 The value field in the Kinetic PDU (describe above) will contain the firmware payload.
@@ -1235,7 +1208,6 @@ command {
     code: SUCCESS
   }
 }
-hmac: ""
 ```
 
 
@@ -1337,8 +1309,6 @@ command {
       }
    }
 }
-hmac: "..."
-
 ```
 
 
@@ -1357,7 +1327,6 @@ command {
     code: SUCCESS
   }
 }
-hmac: ""
 ```
 
 Error Cases:
@@ -1411,7 +1380,6 @@ command {
     }
   }
 }
-hmac: "..."
 ```
 
 **Respose Message**
@@ -1616,7 +1584,6 @@ command {
     }
   }
 }
-hmac: ""
 ```
 
 **Response Message**
@@ -1668,7 +1635,6 @@ command {
     code: SUCCESS
   }
 }
-hmac: ""
 ```
 
 Error Cases:
