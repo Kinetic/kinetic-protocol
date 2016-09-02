@@ -24,6 +24,7 @@ This document describes the structure of Protocol Buffer messages in detail. It 
         - [PUT](#user-content-put)
         - [Delete](#user-content-delete)
         - [Flush](#user-content-flush)
+        - [Synchronization Modes and Behavior] (#user-content-synchronization-modes-and-behavior)
     - [Read Operations](#user-content-read-operations)
         - [Cross-Cutting Concenrs](#user-content-cross-cutting-concenrs)
         - [GET](#user-content-get)
@@ -691,6 +692,11 @@ command {
   }
 }
 ```
+### Synchronization Modes and Behavior
+
+If no system or power failure occurred, the behavior for PUT/DELETE WRITETHROUGH mode and PUT/DELETE WRITEBACK mode are functionally equivalent except for the response time differences. That is, the database integrity is maintained for both WRITETHROUGH and WRITEBACK modes.
+
+Read and modify K/V operations (such as PUT/GET/DELETE) sent from a client within a single threaded context on the same TCP/SSL connection SHOULD BE processed and responded with the received order. 
 
 **Permissions**
 No special permissions are required.
