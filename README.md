@@ -41,6 +41,7 @@ This document describes the structure of Protocol Buffer messages in detail. It 
         - [Security](#user-content-security)
         - [Get Log](#user-content-get-log)
     - [Peer to Peer](#user-content-peer-to-peer)
+    - [Batch Operation](#user-content-batch-operation)
 
 _Table of Contents generated with [DocToc](http://doctoc.herokuapp.com/)_
 
@@ -1658,3 +1659,112 @@ In addition to the failures observed by `PUT`, Operations may experience:
 
 * `NOT_ATTEMPTED` The top level request was aborted before this operation could be attempted, either due to timeouts or another error (e.g. an IO error).
 * `REMOTE_CONNECTION_ERROR` The operation was attempted, but an error prevented the operation from completing.
+
+## Batch Operation
+
+Batch Operation allows a group of K/V commands (PUT and DELETE) to perform all at once.  The commands within a batch are committed to the persistent store if all commands can be committed or otherwise nothing is committed.  
+
+A batch operation is started with a START_BATCH command and ended with a END_BATCH command.  The supported operations are PUT and DELETE commands within a batch.
+
+START_BATCH and END_BATCH have the request-response style messaging pattern similar to most of the Kinetic commands, such as GET command.  
+
+All (PUT/DELETE) operations within a batch do not have response messages.  
+
+The following Batch message construct is included in the END_BATCH and END_BATCH_RESPONSE messages.
+
+```
+// This is included in the END_BATCH and END_BATCH_RESPONSE.
+message Batch {
+  // set by the client library in END_BATCH request message.
+  // the total number of operations in the batch
+  optional int32 count = 1;
+
+  // set by the drive in END_BATCH_RESPONSE message.
+  // If a batch is committed successfully, all sequence Ids of those
+  // commands (PUT/DELETE) performed in the batch are
+  // added in the END_BATCH_RESPONSE message.
+  repeated int64 sequence = 2 [packed=true];
+
+  // This field is set by the drive if a batch commit failed.
+  // The first failed operation sequence in the batch is set in the value of this field.
+  optional int64 failedSequence = 3;
+}  
+
+```
+
+**START_BATCH Request Message**
+
+```
+command{ 
+  header {
+  clusterVersion: ...
+  connectionID: ...
+  sequence: ...
+  // The messageType should be START_BATCH
+  messageType: START_BATCH
+  batchID: ...
+  }
+  
+  body {
+  }
+}
+```
+
+**START_BATCH Response Message**
+
+```
+command: 
+  header {
+    connectionID: ...
+    ackSequence: ...
+    // The messageType should be START_BATCH_RESPONSE
+    messageType: START_BATCH_RESPONSE
+  }
+  
+status {
+  code: SUCCESS
+}
+```
+
+**END_BATCH Request Message**
+
+```
+Command {
+  header {
+    clusterVersion: ...
+    connectionID: ...
+    sequence: ...
+    messageType: END_BATCH
+    batchID: ...
+  }
+  
+  body {
+    batch {
+      count: 2
+    }  
+  }
+}
+```
+
+**END_BATCH Response Message**
+
+```
+Command{
+  header {
+    connectionID: ...
+    ackSequence: ...
+    messageType: END_BATCH_RESPONSE
+  }
+  body {
+    batch {
+      // see above description in message Batch construct
+      sequence: ...
+      sequence: ...
+    }
+  }
+  status {
+    code: SUCCESS
+   }
+}
+```
+
