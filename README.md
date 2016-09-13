@@ -1695,7 +1695,7 @@ message Batch {
 **START_BATCH Request Message**
 
 ```
-command{ 
+command { 
   header {
   clusterVersion: ...
   connectionID: ...
@@ -1704,7 +1704,6 @@ command{
   messageType: START_BATCH
   batchID: ...
   }
-  
   body {
   }
 }
@@ -1713,16 +1712,16 @@ command{
 **START_BATCH Response Message**
 
 ```
-command: 
+command { 
   header {
     connectionID: ...
     ackSequence: ...
     // The messageType should be START_BATCH_RESPONSE
     messageType: START_BATCH_RESPONSE
   }
-  
-status {
-  code: SUCCESS
+  status {
+    code: SUCCESS
+  }
 }
 ```
 
@@ -1737,7 +1736,6 @@ Command {
     messageType: END_BATCH
     batchID: ...
   }
-  
   body {
     batch {
       count: 2
@@ -1749,7 +1747,7 @@ Command {
 **END_BATCH Response Message**
 
 ```
-Command{
+Command {
   header {
     connectionID: ...
     ackSequence: ...
@@ -1768,3 +1766,35 @@ Command{
 }
 ```
 
+Error Cases:
+
+If an error is detected before received the END_BATCH command, such as received more than maximum allowed commands within a batch, the device sent an Unsolicited Status Message and closed the connection. The StatusCode is set to INVALID_REQUEST and the cause is set to the StatusMessage.
+
+If an error is detected after received the END_BATCH command, such as encountered a version mismatch for a PUT command, the device sends a END_BATCH_RESPONSE message with status code set to INVALID_BATCH.  The failed sequence number of the command that caused the failure is set in the failedSequence field of the END_BATCH_RESPONSE message. 
+
+If the device is LOCKed before an END BATCH is received, the device returns an Unsolicited Status Message (INVALID_REQUEST status code, Device Locked message) and the uncommitted batch is removed.  If an END BATCH is received and the batch has started processing, the batch is processed before the device is LOCKed.
+
+If an ISE command is received before an END BATCH is received, the device sends an Unsolicited Status Message and closes the connection. The uncommitted batch is removed.
+
+Example INVALID_BATCH response message
+
+```
+command {
+  header {
+    connectionID: ...
+    ackSequence: ...
+    messageType: END_BATCH_RESPONSE
+  }
+  body {
+    batch {
+      sequence: ...
+      sequence: ...
+      failedSequence: ...
+    }
+  }
+  status {
+    code: INVALID_BATCH
+    statusMessage: "Version mismatch"
+  }
+}
+```
