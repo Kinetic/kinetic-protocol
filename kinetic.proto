@@ -22,7 +22,7 @@ option java_outer_classname = "Kinetic";
 // the protocol version number by building this message
 // and then reading the value.
 message Local {
-	optional string protocolVersion = 1 [default = "3.0.8"];
+	optional string protocolVersion = 1 [default = "3.1.0"];
 }
 
 // THe message is an authorization and command bytes.
