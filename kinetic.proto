@@ -14,6 +14,9 @@
  *
  * See www.openkinetic.org for more project information
  */
+
+syntax = "proto2";
+
 package com.seagate.kinetic.proto;
 
 option java_outer_classname = "Kinetic";
