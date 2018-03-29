@@ -574,8 +574,10 @@ message Command {
 			optional uint32 maxKeyRangeCount = 9;
 			optional uint32 maxIdentityCount = 10;
 			optional uint32 maxPinSize = 11;
-			optional uint32 maxBatchSize = 12;
-			optional uint32 maxDeletesPerBatch = 13;
+			optional uint32 maxOperationCountPerBatch = 12;
+			optional uint32 maxBatchCountPerDevice = 13;
+			optional uint32 maxBatchSize = 14;
+			optional uint32 maxDeletesPerBatch = 15;
 		}
 
 		// The Device GetLog message is to ask the device to send back the
