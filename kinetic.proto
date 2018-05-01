@@ -691,11 +691,15 @@ message Command {
 	}
 
 	enum Priority {
-		NORMAL = 5;
-		LOWEST = 1;
-		LOWER = 3;
-		HIGHER = 7;
-		HIGHEST = 9;
+               LOWEST = 1;
+               LOWER = 2;
+               LOW = 3;
+               LOWERNORMAL = 4;
+               NORMAL = 5;
+               HIGHERNORMAL = 6;
+               HIGH = 7;
+               HIGHER = 8;
+               HIGHEST = 9;
 	}
 
 	//algorithm
