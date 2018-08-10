@@ -62,8 +62,7 @@ message Message {
 		// the TLS connection, execute the pin operation.
 		PINAUTH = 2;
 
-		// In the event that the device is going to close the connection, an
-		// unsolicited status will be returned first.
+		// In the event that the device needs to communicate with the user
 		UNSOLICITEDSTATUS = 3;
 	}
 
@@ -103,21 +102,20 @@ message Command {
 	message Header {
 
 	// "cluster" is the  number of the cluster definition. If this is incompatible,
-	// the request is rejected. If it is missing, it is assumed to be 0. (0 allows systems not
-	// using cluster versioning to ignore this field in the header and in the setup.)
+	// the request is rejected. By default the value is 0, allowing systems not
+	// using cluster versioning to ignore this field in the header and in the setup.
 		optional int64 clusterVersion = 1;
 
 		// 2 is reserved.
 
-		// A unique number for this connection between the source and target. On the first request
-		// to the device, this should be the time of day in seconds since 1970. The device can change this
+		// A unique number for this connection between the source and target. The device can change this
 		// number and the client must continue to use the new number and the number must remain
-		// constant during the session. (See security document).
+		// constant during the session.
 		optional int64 connectionID = 3;
 
 		// the sequence of this request in this TCP connection. As long as this value is getting larger we have
 		// strong ordering and replay prevention within a session. This combined with the time and connectionID
-		// provides strong ordering between sessions. (See security document).
+		// provides strong ordering between sessions.
 		optional int64 sequence = 4;
 
 		//co-related sequence
@@ -215,7 +213,8 @@ message Command {
 		repeated int64 sequence = 2 [packed=true];
 
 		// This field is set by the drive if a batch commit failed.
-		// The first failed operation sequence in the batch is set as value.
+		// The sequence of the first operation to fail in the batch.
+		// There is no guarantee that the previous sequences would have succeeded.
 		optional int64 failedSequence = 3;
 	}
 
@@ -274,7 +273,7 @@ message Command {
 			NO_SUCH_HMAC_ALGORITHM = 15;
 
 			// The request is not valid. Subsequent attempts with the same request will return the same code.
-			// Examples: GET does not specify keyValue message, GETKEYRANGE operation does not specify startKey, etc
+			// Example: PUT a key whose size exceeds the specified maxKeySize in limits.
 			INVALID_REQUEST = 16;
 
 			// For P2P Requests, the operation was executed successfully but some nested operations
@@ -283,22 +282,18 @@ message Command {
 			// of nested P2POperations
 			NESTED_OPERATION_ERRORS = 17;
 
-			// If the device is currently locked and can not validate
-			// the hmac. This is returned as an status
-			// and the connection is terminated.
+			// If the device is currently locked
 			DEVICE_LOCKED = 18;
 
-			// The device was already unlocked. The validity of the
-			// pin was NOT checked. The connection remains open.
+			// The device is already unlocked.
 			DEVICE_ALREADY_UNLOCKED = 19;
 
 			// The connection is being terminated. Details as to why are
 			// in the message string.
 			CONNECTION_TERMINATED = 20;
 
-			// During a batch operation, the only operations allowed are put "
-			// and delete. This error is put against the offending command and "
-			// the rest of the commands and the END_BATCH return NOT_ATTEMPTED."
+			// The batch request is not valid. Subsequent attempts with the same batch request will return the
+			// same code. Example: A batch that contains a command other than put or delete.
 			INVALID_BATCH = 21;
 
 			// the status is returned to caller if commands are received when
@@ -317,11 +312,11 @@ message Command {
 
 	// 1 is reserved
 
-	// On a put or delete, this is the next version that the data will be. The version field is opaque to the
-	// target. (See Atomic operations document)
+	// On a put, this is the next version that the data will be. The version field is opaque to the target.
 		optional bytes newVersion = 2;
 
-		// On a put or delete, this forces the write to ignore the existing version of existing data (if it exists).
+		// If set to True, puts will ignore any existing version (if it exists), and deletes will ignore
+		// any existing version or if the key is not found (allowing a success on the delete of a non-existent key).
 		optional bool force = 8;
 
 		//entry key
@@ -336,14 +331,12 @@ message Command {
 
 		// The following is for the protection of the data. If the data is protected with a hash or CRC, then
 		// the algorithm will be negative. If the data protection algorithm is not a standard unkeyed algorithm
-		// then  a positive number is used and the device has no idea what the key is. See the discussion of
-		// encrypted key/value store.(See security document).
+		// then  a positive number is used and the device has no idea what the key is.
 		optional Algorithm algorithm = 6;
 
 		// for read operations, this will get all the information about the value except for the
 		// value itself. This is valuable for getting the integrity field or the version without also
-		// having to get the data. If this field is not present, it is as if it is false. For
-		// write or delete operations, if this is set, the command is rejected.
+		// having to get the data.
 		optional bool metadataOnly = 7;
 
 		// Synchronization allows the puts and deletes to determine if they are to be
@@ -386,13 +379,11 @@ message Command {
 
 	//set up operation.
 
-	// if any or all of these are fields are included, they are set.
 	// These are persistent options that are retained across power fail and
 	// erased on either PIN erase or PIN secure erase.
 	message Setup {
 
 	// The cluster version to be checked. The default if never set is 0.
-	// If this is missing, it is assumed to be unchanged;
 	// This is persistent between boots of the device.
 		optional int64 newClusterVersion = 1;
 
@@ -506,7 +497,7 @@ message Command {
 
 		message Configuration {
 
-		// name of the vendor. Should be "Seagate"
+		// name of the vendor.
 			optional string vendor = 5;
 
 			// The model of the device.
@@ -520,7 +511,6 @@ message Command {
 			optional bytes worldWideName = 14;
 
 			// This is the vendor specific version of the software on the device in dot notation
-			// if this is not set or ends with "x" this is test code.
 			optional string version = 8;
 			optional string compilationDate = 12;
 			optional string sourceHash = 13;
@@ -624,13 +614,13 @@ message Command {
 			enum HMACAlgorithm {
 				INVALID_HMAC_ALGORITHM = -1; // Must come first
 				// 0 is reserved; do not use
-				HmacSHA1 = 1; // this is the default
+				HmacSHA1 = 1;
 			}
 
 			message Scope {
 				optional int64 offset = 1;
 				optional bytes value = 2;
-				repeated Permission permission = 3; // one per role
+				repeated Permission permission = 3;
 				optional bool TlsRequired = 4; // This is only allowed over the the TLS connection
 			}
 
@@ -647,9 +637,8 @@ message Command {
 				POWER_MANAGEMENT = 9; // can setup power management
 			}
 
-			// The maxPriority is checked against the header priority and range
-			// priority (if present) fields. The priority must be greater than
-			// or equal to this maxPriority field.
+			// The maxPriority is checked against the header priority field. The header priority
+			// for any command must be less than or equal to this maxPriority field.
 			optional Priority maxPriority = 5;
 		}
 
@@ -777,7 +766,7 @@ message Command {
 	enum PowerLevel {
 		INVALID_LEVEL = -1;
 		OPERATIONAL = 1; // Fully operational mode, default mode for the drive
-		HIBERNATE = 2; // All operations will be rejected
+		HIBERNATE = 2; // All operations other than SET_POWER_LEVEL will be rejected
 		SHUTDOWN = 3;
 		FAIL = 4;
 	}
