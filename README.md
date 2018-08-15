@@ -107,7 +107,7 @@ The Kinetic Protocol supports restricting the operations a requester (identity) 
       // the permission will only apply to keys that match the value at 
       // the given offset. This is analogous to a substring match in many 
       // languages, where the key in question is the target.
-			optional int64 offset = 1;
+			optional uint64 offset = 1;
 			optional bytes value = 2;
 			
 			// The Permission being granted.
@@ -2041,18 +2041,18 @@ The following Batch message construct is included in the END_BATCH and END_BATCH
 message Batch {
   // set by the client library in END_BATCH request message.
   // the total number of operations in the batch
-  optional int32 count = 1;
+  optional uint32 count = 1;
 
   // set by the drive in END_BATCH_RESPONSE message.
   // If a batch is committed successfully, all sequence Ids of those
   // commands (PUT/DELETE) performed in the batch are
   // added in the END_BATCH_RESPONSE message.
-  repeated int64 sequence = 2 [packed=true];
+  repeated uint64 sequence = 2 [packed=true];
 
   // This field is set by the drive if a batch commit failed.
   // The sequence of the first operation to fail in the batch.
 	// There is no guarantee that the previous sequences would have succeeded.
-  optional int64 failedSequence = 3;
+  optional uint64 failedSequence = 3;
 }  
 
 ```
