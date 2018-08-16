@@ -25,7 +25,7 @@ option java_outer_classname = "Kinetic";
 // the protocol version number by building this message
 // and then reading the value.
 message Local {
-	optional string protocolVersion = 1 [default = "3.1.1"];
+	optional string protocolVersion = 1 [default = "4.0.0"];
 }
 
 // THe message is an authorization and command bytes.
@@ -387,12 +387,24 @@ message Command {
 	// This is persistent between boots of the device.
 		optional int64 newClusterVersion = 1;
 
-		// 2, 3, 4 are reserved.
+		// 2, 3, 4, 5 are reserved.
 
-		// indicates the presence of a firmware load in the data portion of this
-		// message. The firmware is itself protected on its own for integrity,
-		// authenticity, etc.
-		optional bool firmwareDownload = 5;
+		// Indicate the purpose of this message, tells the device what fields are relevent
+		optional SetupOpType setupOpType = 6;
+		
+		enum SetupOpType {
+			INVALID_SETUPOP = -1;
+
+			// This setup command is to issue a firmware update
+			// There is a firmware load in the data portion of this message. 
+			// The firmware is itself protected on its own for integrity,
+			// authenticity, etc.
+			FIRMWARE_SETUPOP = 1;
+
+			// This setup command is to update the cluster version
+			CLUSTER_VERSION_SETUPOP = 2;
+		}
+
 	}
 
 	// P2P operations allow devices to be able to send keys to other devices.
@@ -600,8 +612,21 @@ message Command {
 		optional bytes newLockPIN = 4;
 		optional bytes oldErasePIN = 5;
 		optional bytes newErasePIN = 6;
+		optional SecurityOpType securityOpType = 7;
+		
+		enum SecurityOpType {
+			INVALID_SECURITYOP = -1;
 
-		//
+			// This security command is to set up ACL identities
+			ACL_SECURITYOP = 1;
+
+			// This security command is to set the erase pin
+			ERASE_PIN_SECURITYOP = 2;
+
+			// This security command is to set the lock pin
+			LOCK_PIN_SECURITYOP = 3;
+		}
+		
 		message ACL {
 			optional int64 identity = 1;
 			optional bytes key = 2; // the HMAC key
