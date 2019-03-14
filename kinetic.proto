@@ -25,7 +25,7 @@ option java_outer_classname = "Kinetic";
 // the protocol version number by building this message
 // and then reading the value.
 message Local {
-	optional string protocolVersion = 1 [default = "4.0.0"];
+	optional string protocolVersion = 1 [default = "4.0.1"];
 }
 
 // THe message is an authorization and command bytes.
@@ -565,6 +565,8 @@ message Command {
 			// the command description. For P2P operations, this is the amount of data moved between
 			// devices
 			optional uint64 bytes = 5;
+			//reports max response time for each operation in ms
+			optional uint64 maxLatency = 6;
 		}
 
 		message Limits {
