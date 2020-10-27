@@ -1,5 +1,5 @@
 /**
- * Copyright 2013-2015 Seagate Technology LLC.
+ * Copyright 2013-2020 Seagate Technology LLC.
  *
  * This Source Code Form is subject to the terms of the Mozilla
  * Public License, v. 2.0. If a copy of the MPL was not
@@ -25,7 +25,7 @@ option java_outer_classname = "Kinetic";
 // the protocol version number by building this message
 // and then reading the value.
 message Local {
-	optional string protocolVersion = 1 [default = "4.0.1"];
+	optional string protocolVersion = 1 [default = "4.0.1app"];
 }
 
 // THe message is an authorization and command bytes.
@@ -194,10 +194,185 @@ message Command {
 
 		// power management
 		optional PowerManagement power = 10;
+
+		optional ManageApplet manageApplet = 11;
 	}
 
 	message PowerManagement {
 		optional PowerLevel level = 1;
+	}
+
+	message ManageApplet {
+		optional ManageAppletType manageAppletType = 1;
+		optional Language lang = 2;
+		repeated bytes programKey = 3;
+		optional int32 maxRunTime = 4;
+		repeated ProcessStatus processStatus = 5;
+
+		// XXX NEW (To be endorsed)
+		optional WatchScope watchScope = 6;
+
+		/** XXX NEW (To be endorsed)
+		 * This is essential to invoke an (watcher) applet to pass program
+		 * parameters such the user ID and Hmac Key.
+		 * <p>
+		 * An applet can be invoked directly or triggered as watcher applet.
+		 * <p>
+		 * The applet container implementation (such as Kinetic device or simulator)
+		 * may use this to read the applet output and set the content in the
+		 * value field of the notification message.
+		 *
+		 * @see outputKey
+		 */
+		repeated string programParam = 7;
+
+		/**
+		 * EXECUTE acknowledge mode.
+		 * @see #AcknowledgeMode description
+		 */
+		optional AcknowledgeMode acknowledgeMode = 8;
+
+		/**
+		 * XXX NEW (To be endorsed)
+		 * If (notifyOnCompletion) field is set to true, this
+		 * Notification message construct is included in the unsolicited
+		 * status message sent to the client watcher.
+		 * <p>
+		 * 1. The programKey is set in the ManagedApplet construct.
+		 * <p>
+		 * 2. The output of the applet execution is set in the value
+		 * field of this notification message if setValueInResponse
+		 * is set to true.
+		 * <p>
+		 * 3. The EXECUTE_COMPLETE status code is set in the notification
+		 * message.
+		 */
+		optional Notification notification = 9;
+	
+		/**
+		 * XXX NEW (To be endorsed)
+		 *
+		 * Send an async notification when applet complete its execution.
+		 * <p>
+		 * This applies to EXECUTE invocation and WATCH triggered execution.
+		 */
+		optional bool notifyOnCompletion = 10;
+	
+		/**
+		 * XXX NEW (To be endorsed)
+		 *
+		 * Applet writes its output to the specified key.
+		 *
+		 * @see #setValueInResponse
+		 */
+		optional bytes outputKey = 11;
+	
+		/**
+		 * XXX NEW (To be endorsed)
+		 * <p>
+		 * If set to true, the value of the outputKey entry is set in
+		 * the EXECUTE response message or EXECUTE/WATCH async notification
+		 * message by the applet host/container.
+		 * <p>
+		 * This flag has no effect if Acknowledge.ON_RECEIPT mode is used.
+		 * <p>
+		 *
+		 * @see #outputKey
+		 */
+		optional bool setValueInResponse = 12;
+	
+		enum ManageAppletType {
+			INVALID_EXECUTE = -1;
+			EXECUTE = 1;
+			DEBUG = 2;
+			ABORT = 3;
+			GET_PROCESS_STATUS = 4;
+	
+			// XXX NEW (To be endorsed)
+			INSTALL = 5;
+			UPDATE = 6;
+			UNINSTALL = 7;
+	
+			//XXX NEW (To be endorsed)
+			WATCH = 8;
+			UNWATCH = 9;
+		}
+	
+		enum Language {
+			INVALID_PROGRAM = -1;
+			VENDOR_DEPENDENT = 1;
+			LLVM_KINETIC_BITCODE = 2;
+			JAVA_BYTECODE = 3;
+			EBPF = 4;
+		}
+	
+		message ProcessStatus {
+			repeated bytes programKey = 1;
+			optional int32 timeToExpiration = 2;
+		}
+	
+		/**
+		 * A watcher applet is registered with ManageAppletType set to WATCH
+		 * and with a watch scope set in the WatchScope message.
+		 * <p>
+		 * When a request matched with the specified message type and
+		 * key set in the watcher, the watcher applet is invoked.
+		 * <p>
+		 * A watcher applet is invoked with the programParams as parameters.
+		 * The programParams were set when placing a Watch to the Kinetic
+		 * device.
+		 * <p>
+		 * If there are events matched to a watcher while it is still running,
+		 * only the last event is kept and the watcher is invoked when the
+		 * previous execution is finished or terminated.
+		 */
+		message WatchScope {
+			// start key (inclusive) for watcher applet to be invoked
+			optional bytes startKey = 1;
+			// send key (inclusive) for watcher applet to be invoked
+			optional bytes endKey = 2;
+			// message type for watcher applet to be invoked
+			repeated MessageType mtype = 3;
+		}
+	
+		/**
+		* If (notifyOnCompletion) field is set to true, this
+		* message construct is included in the unsolicited status
+		* message sent to the watcher client when applet was triggered
+		* and finished its execution.
+		* <p>
+		* The the value of the outputKey entry, if not null, is set in
+		* the value field of the notification message if setValueInResponse
+		* is set to true.
+		* <p>
+		* @see setValueInResponse
+		*/
+		message Notification {
+			// the K/V key associated with the notification
+			optional bytes key = 2;
+			// the command message type associated with this notification
+     	     		optional MessageType mtype = 3;
+		}
+	
+		/**
+		 * Applet EXECUTE request message acknowledge mode.
+		 * The execution response message should be returned based this field.
+		 * <p>
+		 * If ON_RECEIPT is used, the response message should be returned when request
+		 * is received/validated and before the execution starts.  This is usually used
+		 * when invoking a long running applet. This can also be used along with
+		 * (notifyOnCompletion) flag to receive an asynchronous notification when
+		 * the applet execution is complete.
+		 * <p>
+		 * If ON_COMPLETION is used, the response message should be returned when
+		 * the applet execution is complete.  This is usually used when invoking a
+		 * short running applet.  An error response should be immediately returned if execution
+		 * failed.
+		 */
+		 enum AcknowledgeMode {
+     	     	 	ON_RECEIPT = 1;
+			ON_COMPLETION = 2;
+		}
 	}
 
 	// This is included in the END_BATCH and END_BATCH_RESPONSE.
@@ -303,6 +478,15 @@ message Command {
 			// the status is returned to caller if commands are received when
 			// device is shutting down.
 			SHUTDOWN = 23;
+
+			// unable to execute applet due to internal errors.
+			INVALID_EXECUTE = 24;
+
+			// If 'notifyExecuteCompletion' field is set to true
+			// when EXECUTE or place a WATCH, the drive send an
+			// unsolicited status message when the applet execution
+			// is complete.
+			EXECUTE_COMPLETE = 25;
 		}
 
 	}
@@ -662,6 +846,7 @@ message Command {
 				GETLOG = 7; // can get log
 				SECURITY = 8; // can set up the security roles of the device
 				POWER_MANAGEMENT = 9; // can setup power management
+				MANAGE_APPLET = 10;
 			}
 
 			// The maxPriority is checked against the header priority field. The header priority
@@ -792,6 +977,9 @@ message Command {
 		// power management
 		SET_POWER_LEVEL = 48;
 		SET_POWER_LEVEL_RESPONSE = 47;
+
+		MANAGE_APPLET = 50;
+		MANAGE_APPLET_RESPONSE = 49;
 	}
 
 	enum PowerLevel {
